@@ -1,0 +1,16 @@
+{
+  "name": "polylaunch",
+  "version": "0.0.0",
+  "description": "",
+  "dependencies": {
+	"debounce": "*",
+	"fastclick": "1.0.6",
+    "konva": "0.12.4"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "demc",
+  "license": "ISC"
+}
