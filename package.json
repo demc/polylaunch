@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "description": "",
   "dependencies": {
-	"debounce": "*",
-	"fastclick": "1.0.6",
-    "konva": "0.12.4"
+	  "fastclick": "1.0.6",
+    "konva": "0.12.4",
+    "watchify": "*"
   },
   "main": "index.js",
   "scripts": {
