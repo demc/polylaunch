@@ -6,9 +6,13 @@ polylaunch(function(P) {
 
   var app = P.App(
     'container',
-    document.body.scrollWidth,
-    document.body.scrollHeight
+    window.innerWidth,
+    window.innerHeight
   );
 
+  window.addEventListener('resize', function() {
+    app.resize(window.innerWidth, window.innerHeight);
+  });
+  
   app.draw();
 });

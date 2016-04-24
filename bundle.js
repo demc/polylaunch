@@ -7,14 +7,80 @@ polylaunch(function(P) {
 
   var app = P.App(
     'container',
-    document.body.scrollWidth,
-    document.body.scrollHeight
+    window.innerWidth,
+    window.innerHeight
   );
 
+  window.addEventListener('resize', function() {
+    app.resize(window.innerWidth, window.innerHeight);
+  });
+  
   app.draw();
 });
 
-},{"./polylaunch":4,"fastclick":2}],2:[function(require,module,exports){
+},{"./polylaunch":6,"fastclick":4}],2:[function(require,module,exports){
+
+/**
+ * Module dependencies.
+ */
+
+var now = require('date-now');
+
+/**
+ * Returns a function, that, as long as it continues to be invoked, will not
+ * be triggered. The function will be called after it stops being called for
+ * N milliseconds. If `immediate` is passed, trigger the function on the
+ * leading edge, instead of the trailing.
+ *
+ * @source underscore.js
+ * @see http://unscriptable.com/2009/03/20/debouncing-javascript-methods/
+ * @param {Function} function to wrap
+ * @param {Number} timeout in ms (`100`)
+ * @param {Boolean} whether to execute at the beginning (`false`)
+ * @api public
+ */
+
+module.exports = function debounce(func, wait, immediate){
+  var timeout, args, context, timestamp, result;
+  if (null == wait) wait = 100;
+
+  function later() {
+    var last = now() - timestamp;
+
+    if (last < wait && last > 0) {
+      timeout = setTimeout(later, wait - last);
+    } else {
+      timeout = null;
+      if (!immediate) {
+        result = func.apply(context, args);
+        if (!timeout) context = args = null;
+      }
+    }
+  };
+
+  return function debounced() {
+    context = this;
+    args = arguments;
+    timestamp = now();
+    var callNow = immediate && !timeout;
+    if (!timeout) timeout = setTimeout(later, wait);
+    if (callNow) {
+      result = func.apply(context, args);
+      context = args = null;
+    }
+
+    return result;
+  };
+};
+
+},{"date-now":3}],3:[function(require,module,exports){
+module.exports = Date.now || now
+
+function now() {
+    return new Date().getTime()
+}
+
+},{}],4:[function(require,module,exports){
 ;(function () {
 	'use strict';
 
@@ -857,7 +923,7 @@ polylaunch(function(P) {
 	}
 }());
 
-},{}],3:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function (global){
 
 /*
@@ -17080,8 +17146,10 @@ polylaunch(function(P) {
 })();
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"canvas":5,"jsdom":5}],4:[function(require,module,exports){
+},{"canvas":7,"jsdom":7}],6:[function(require,module,exports){
 var Konva = require('konva');
+
+var debounce = require('debounce');
 
 module.exports = PolyLaunch = function (callback) {
 
@@ -17117,7 +17185,8 @@ module.exports = PolyLaunch = function (callback) {
   };
 
   App.prototype._registerHandlers = function() {
-    var handler = function(event) {
+    var content = this._stage.getContent();
+    content.addEventListener('click', function(event) {
       var x0 = event.x;
       var y0 = event.y;
 
@@ -17125,10 +17194,12 @@ module.exports = PolyLaunch = function (callback) {
         var pipe = new QuadraticPipe(this, this._pipeLayer, x0, y0, x0 + 50, y0 + 50, x0 + 100, y0 + 100);
         this.addPipe(pipe);
       }
-    }.bind(this);
+    }.bind(this));
 
-    var content = this._stage.getContent();
-    content.addEventListener('click', handler);
+    var container = this._stage.getContainer();
+    container.addEventListener('touchmove', function(event) {
+      event.preventDefault();
+    });
   };
 
   App.prototype.addPipe = function(pipe) {
@@ -17145,6 +17216,18 @@ module.exports = PolyLaunch = function (callback) {
     this._oldCursor = document.body.style.cursor || 'default';
     document.body.style.cursor = cursor;
   };
+
+  App.prototype.resize = debounce(function(width, height) {
+    this.height = height;
+    this.width = width;
+
+    this._stage.setSize({
+      height: height,
+      width: width
+    });
+
+    this._stage.draw();
+  }, 300);
 
   App.prototype.revertCursor = function() {
     if (this._oldCursor) {
@@ -17163,6 +17246,23 @@ module.exports = PolyLaunch = function (callback) {
 
     var height = Math.abs(yMin - yMax);
     var width = Math.abs(xMin - xMax);
+
+    this._curve = new Konva.Shape({
+      sceneFunc: function(ctx) {
+        var controlPoint = this.attrs.controlPoint;
+        var endPoint = this.attrs.endPoint; 
+        var startPoint = this.attrs.startPoint;
+
+        ctx.beginPath();
+        ctx.moveTo(startPoint.x, startPoint.y);
+        ctx.quadraticCurveTo(controlPoint.x, controlPoint.y, endPoint.x, endPoint.y);
+        ctx.strokeShape(this);
+      },
+      stroke: '#222',
+      startPoint: {x: x0, y: y0},
+      controlPoint: {x: x1, y: y1},
+      endPoint: {x: x2, y: y2}
+    });
 
     this._boundingBox = new Konva.Rect({
       height: height,
@@ -17206,10 +17306,11 @@ module.exports = PolyLaunch = function (callback) {
 
     this._group = new Konva.Group({draggable: true});
 
+    this._group.add(this._curve);
     this._group.add(this._boundingBox);
     this._group.add(this._controlAnchor);
-    this._group.add(this._startAnchor);   
     this._group.add(this._endAnchor);
+    this._group.add(this._startAnchor);   
 
     this._boundingBox.on('mouseenter', function(event) {
       this._app.setCursor('move');        
@@ -17244,6 +17345,7 @@ module.exports = PolyLaunch = function (callback) {
 
       this.setControlPoint({x: x, y: y});
       this.updateBoundingBox();
+      this.updateCurve();
 
       this._app.draw();
     }.bind(this));
@@ -17254,6 +17356,7 @@ module.exports = PolyLaunch = function (callback) {
 
       this.setEndPoint({x: x, y: y});
       this.updateBoundingBox();
+      this.updateCurve();
 
       this._app.draw();
     }.bind(this));
@@ -17264,6 +17367,7 @@ module.exports = PolyLaunch = function (callback) {
 
       this.setStartPoint({x: x, y: y});
       this.updateBoundingBox();
+      this.updateCurve();
 
       this._app.draw();
     }.bind(this));
@@ -17321,6 +17425,14 @@ module.exports = PolyLaunch = function (callback) {
       .setY(yMin);
   };
 
+  QuadraticPipe.prototype.updateCurve = function() {
+    this._curve.setAttrs({
+      controlPoint: this._controlPoint,
+      endPoint: this._endPoint,
+      startPoint: this._startPoint
+    });
+  };
+
   var CubicPipe = function() {
 
   };
@@ -17352,6 +17464,6 @@ module.exports = PolyLaunch = function (callback) {
   });
 };
 
-},{"konva":3}],5:[function(require,module,exports){
+},{"debounce":2,"konva":5}],7:[function(require,module,exports){
 
 },{}]},{},[1]);
