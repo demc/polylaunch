@@ -42,7 +42,7 @@ function bezier2(name, p0, p1, p2) {
     return (
       name + ' = ' +
       roundPrecision(p0, 2) + '(1-t)^2 + ' +
-      roundPrecision(p1, 2) + ' 2(1-t)t + ' +
+      roundPrecision(p1 * 2, 2) + '(1-t)t + ' +
       roundPrecision(p2, 2) + 't^2'
     );  
   };
