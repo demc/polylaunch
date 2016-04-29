@@ -1,11 +1,11 @@
 var Katex = require('katex');
 var Konva = require('konva');
-// var MathJax = require('mathjax');
 
 var debounce = require('debounce');
 var bezier2 = require('./bezier2');
+var linearTween = require('./linear-tween');
 
-module.exports = PolyLaunch = function (callback) {
+module.exports = function(callback) {
 
   // Override pixelRatio
   Konva.pixelRatio = window.devicePixelRatio;
@@ -23,11 +23,6 @@ module.exports = PolyLaunch = function (callback) {
 
     this.height = height;
     this.width = width;
-    
-    this._launcherManager = new LauncherManager();
-    this._pipeManager = new PipeManager();
-    this._obstacleManager = new ObstacleManager();
-    this._targetManager = new TargetManager();
 
     this._pipes = [];
 
@@ -37,6 +32,8 @@ module.exports = PolyLaunch = function (callback) {
       width: width,
     });
 
+    this._freeAnimationLayers = [];
+    this._usedAnimationLayers = [];
     this._pipeLayer = new Konva.Layer();
 
     this._stage.add(this._pipeLayer);
@@ -118,10 +115,31 @@ module.exports = PolyLaunch = function (callback) {
     }
   };
 
+  App.prototype.requestAnimationLayer = function(callback) {
+    var animLayer = this._freeAnimationLayers.length
+      ? this._freeAnimationLayers.shift()
+      : new Konva.Layer();
+    
+    this._stage.add(animLayer);
+    // this._usedAnimationLayers.push(animLayer);
+
+    function destroy() {
+      // this._usedAnimationLayers.remove(animLayer); 
+      anim.layer.clear();
+      this._freeAnimationLayers.push(animLayer);
+    }
+
+    callback(animLayer, destroy);
+  };
+
   var QuadraticPipe = function(app, layer, jax, x0, y0, x1, y1, x2, y2) {
     this._app = app;
     this._layer = layer;
     this._jax = jax;
+
+    this._controlPoint = {x: x1, y: y1};
+    this._endPoint = {x: x2, y: y2};
+    this._startPoint = {x: x0, y: y0};
 
     var xMax = Math.max(x0, x1, x2);
     var xMin = Math.min(x0, x1, x2);
@@ -204,6 +222,26 @@ module.exports = PolyLaunch = function (callback) {
       this._app.revertCursor();
     }.bind(this));
 
+    this._group.on('dblclick', function(event) {
+      this._group.hide();
+      this._app.draw();
+
+      var x = this._group.x();
+      var y = this._group.y();
+
+      this._app.requestAnimationLayer(function(layer, destroy) {
+        var anim = new QuadraticPipeAnimation(
+          layer,
+          {x: x + this._controlPoint.x, y: y + this._controlPoint.y},
+          {x: x + this._startPoint.x, y: y + this._startPoint.y},
+          {x: x + this._endPoint.x, y: y + this._endPoint.y},
+          2000
+        );
+
+        anim.play();
+      }.bind(this));
+    }.bind(this));
+
     var pointMouseEnterHandler = function(event) {
       event.target.setStrokeWidth(2).setRadius(7);
       this._app.setCursor('default');
@@ -258,13 +296,13 @@ module.exports = PolyLaunch = function (callback) {
 
       this._app.draw();
     }.bind(this));
-
-    this._controlPoint = {x: x1, y: y1};
-    this._endPoint = {x: x2, y: y2};
-    this._startPoint = {x: x0, y: y0};
   };
 
-  QuadraticPipe.prototype.draw = function() {
+  QuadraticPipe.prototype.animate = function() {
+    
+  };
+
+  QuadraticPipe.prototype.unanimate = function() {
 
   };
 
@@ -284,6 +322,10 @@ module.exports = PolyLaunch = function (callback) {
     return this._startPoint;
   };
 
+  QuadraticPipe.prototype.hide = function() {
+    this._group.hide();
+  };
+
   QuadraticPipe.prototype.setControlPoint = function(point) {
     this._controlPoint = point;
   }
@@ -294,6 +336,10 @@ module.exports = PolyLaunch = function (callback) {
 
   QuadraticPipe.prototype.setStartPoint = function(point) {
     this._startPoint = point;
+  };
+
+  QuadraticPipe.prototype.show = function() {
+    this._group.show();
   };
 
   QuadraticPipe.prototype.updateBoundingBox = function() {
@@ -333,37 +379,175 @@ module.exports = PolyLaunch = function (callback) {
     );
   }, 100);
 
-  QuadraticPipe.prototype.onUpdate = function(tex) {
-    this._updateHandler && this._updateHandler(tex);
+  QuadraticPipeAnimation = function(layer, controlPoint, startPoint, endPoint, duration) {
+    this._controlPoint = controlPoint;
+    this._duration = duration || 3000;
+    this._endPoint = endPoint;
+    this._layer = layer;
+    this._progress = 0;
+    this._startPoint = startPoint;
+
+    this._controlAnchor = new Konva.Circle({
+      fill: 'pink',
+      radius: 5,
+      stroke: 'red',
+      strokeWidth: 1,
+      x: controlPoint.x,
+      y: controlPoint.y
+    });
+
+    this._endAnchor = new Konva.Circle({
+      fill: '#eee',
+      radius: 5,
+      stroke: '#222',
+      strokeWidth: 1,
+      x: endPoint.x,
+      y: endPoint.y
+    });
+
+    this._startAnchor = new Konva.Circle({
+      fill: '#eee',
+      radius: 5,
+      stroke: '#222',
+      strokeWidth: 1,
+      x: startPoint.x,
+      y: startPoint.y
+    });
+    
+    this._curve = new Konva.Shape({
+      sceneFunc: function(ctx) {
+        var controlPoint = this.attrs.controlPoint;
+        var endPoint = this.attrs.endPoint; 
+        var startPoint = this.attrs.startPoint;
+
+        ctx.beginPath();
+        ctx.moveTo(startPoint.x, startPoint.y);
+        ctx.quadraticCurveTo(controlPoint.x, controlPoint.y, endPoint.x, endPoint.y);
+        ctx.strokeShape(this);
+      },
+      stroke: '#222',
+      startPoint: {x: startPoint.x, y: startPoint.y},
+      controlPoint: {x: startPoint.x, y: startPoint.y},
+      endPoint: {x: startPoint.x, y: startPoint.y}
+    });
+
+    this._lineA = new Konva.Line({
+      points: [
+        this._startPoint.x, this._startPoint.y,
+        this._controlPoint.x, this._controlPoint.y
+      ],
+      stroke: '#222',
+      strokeWidth: 1,
+    });
+
+    this._lineB = new Konva.Line({
+      points: [
+        this._controlPoint.x, this._controlPoint.y,
+        this._endPoint.x, this._endPoint.y
+      ],
+      stroke: '#222',
+      strokeWidth: 1,
+    });
+
+    this._animPointA = {x: startPoint.x, y: startPoint.y};
+    this._animPointB = {x: controlPoint.x, y: controlPoint.y};
+
+    this._tweenAB = linearTween(startPoint.x, startPoint.y, controlPoint.x, controlPoint.y);
+    this._tweenBC = linearTween(controlPoint.x, controlPoint.y, endPoint.x, endPoint.y);
+
+    this._animAnchorA = new Konva.Circle({
+      fill: 'aliceblue',
+      radius: 5,
+      stroke: 'blue',
+      strokeWidth: 1,
+      x: startPoint.x,
+      y: startPoint.y
+    });
+
+    this._animAnchorB = new Konva.Circle({
+      fill: 'aliceblue',
+      radius: 5,
+      stroke: 'blue',
+      strokeWidth: 1,
+      x: controlPoint.x,
+      y: controlPoint.y
+    }); 
+
+    this._animAnchorC = new Konva.Circle({
+      fill: 'lightgreen',
+      radius: 5,
+      stroke: 'green',
+      strokeWidth: 1,
+      x: startPoint.x,
+      y: startPoint.y
+    });
+
+    this._animLine = new Konva.Line({
+      points: [
+        this._animPointA.x, this._animPointA.y,
+        this._animPointB.x, this._animPointB.y
+      ],
+      stroke: 'blue',
+      strokeWidth: 2,
+    });
+
+    this._layer.add(this._lineA);
+    this._layer.add(this._lineB);
+    this._layer.add(this._curve);
+    this._layer.add(this._controlAnchor);
+    this._layer.add(this._endAnchor);
+    this._layer.add(this._startAnchor);
+    this._layer.add(this._animLine);
+    this._layer.add(this._animAnchorA);
+    this._layer.add(this._animAnchorB);
+    this._layer.add(this._animAnchorC);
+
+    this._anim = new Konva.Animation(
+      this._tick.bind(this),
+      layer
+    ); 
   };
 
-  var CubicPipe = function() {
+  QuadraticPipeAnimation.prototype._tick = function(frame) {
+    var progress = this._progress = (this._progress + 0.005) % 1;
+
+    var ab = this._tweenAB(progress);
+    var bc = this._tweenBC(progress);
+
+    var penTween = linearTween(ab.x, ab.y, bc.x, bc.y);
+    var pen = penTween(progress);
+
+    this._animAnchorA.setX(ab.x).setY(ab.y);
+    this._animAnchorB.setX(bc.x).setY(bc.y);
+    this._animAnchorC.setX(pen.x).setY(pen.y);
+    this._animLine.setPoints([ab.x, ab.y, bc.x, bc.y]);
+    this._curve.setAttrs({
+      endPoint: {x: pen.x, y: pen.y},
+      controlPoint: {x: ab.x, y: ab.y}
+    });
+  };
+
+  QuadraticPipeAnimation.prototype.pause = function() {
 
   };
 
-  var LauncherManager = function() {
+  QuadraticPipeAnimation.prototype.play = function() {
+    this._anim.start();
+  };
+
+  QuadraticPipeAnimation.prototype.reset = function() {
 
   };
 
-  var PipeManager = function() {
+  QuadraticPipeAnimation.prototype.seek = function(position) {
 
   };
 
-  var ObstacleManager = function() {
-
-  };
-
-  var TargetManager = function() {
-
+  QuadraticPipeAnimation.prototype.stop = function() {
+    this._anim.stop();
   };
 
   callback({
     App: App,
-    QuadraticPipe: QuadraticPipe,
-    CubicPipe: CubicPipe,
-    LauncherManager: LauncherManager,
-    PipeManager: PipeManager,
-    ObstacleManager: ObstacleManager,
-    TargetManager: TargetManager
   });
 };

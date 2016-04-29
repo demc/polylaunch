@@ -26,7 +26,7 @@ polylaunch(function(P) {
   app.draw();
 });
 
-},{"./polylaunch":95,"fastclick":5,"tooltip":84}],2:[function(require,module,exports){
+},{"./polylaunch":96,"fastclick":6,"tooltip":85}],2:[function(require,module,exports){
 var roundPrecision = require('round-precision');
 
 function bezier2(name, p0, p1, p2) {
@@ -57,7 +57,22 @@ module.exports = function(controlPoint, startPoint, endPoint) {
   }
 };
 
-},{"round-precision":30}],3:[function(require,module,exports){
+},{"round-precision":31}],3:[function(require,module,exports){
+function linearTween(x0, y0, x1, y1) {
+  var diffX = x1 - x0;
+  var diffY = y1 - y0;
+   
+  return function(progress) {
+    return {
+      x: x0 + progress * diffX,
+      y: y0 + progress * diffY
+    };
+  };
+}
+
+module.exports = linearTween;
+
+},{}],4:[function(require,module,exports){
 
 /**
  * Module dependencies.
@@ -112,14 +127,14 @@ module.exports = function debounce(func, wait, immediate){
   };
 };
 
-},{"date-now":4}],4:[function(require,module,exports){
+},{"date-now":5}],5:[function(require,module,exports){
 module.exports = Date.now || now
 
 function now() {
     return new Date().getTime()
 }
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 ;(function () {
 	'use strict';
 
@@ -962,7 +977,7 @@ function now() {
 	}
 }());
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /* eslint no-console:0 */
 /**
  * This is the main entry point for KaTeX. Here, we expose functions for
@@ -1038,7 +1053,7 @@ module.exports = {
     ParseError: ParseError,
 };
 
-},{"./src/ParseError":10,"./src/Settings":12,"./src/buildTree":17,"./src/parseTree":26,"./src/utils":28}],7:[function(require,module,exports){
+},{"./src/ParseError":11,"./src/Settings":13,"./src/buildTree":18,"./src/parseTree":27,"./src/utils":29}],8:[function(require,module,exports){
 /** @flow */
 
 "use strict";
@@ -1081,7 +1096,7 @@ function matchAt(re, str, pos) {
 }
 
 module.exports = matchAt;
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 /**
  * The Lexer class handles tokenizing the input in various ways. Since our
  * parser expects us to be able to backtrack, the lexer allows lexing from any
@@ -1245,7 +1260,7 @@ Lexer.prototype.lex = function(pos, mode) {
 
 module.exports = Lexer;
 
-},{"./ParseError":10,"match-at":7}],9:[function(require,module,exports){
+},{"./ParseError":11,"match-at":8}],10:[function(require,module,exports){
 /**
  * This file contains information about the options that the Parser carries
  * around with it while parsing. Data is held in an `Options` object, and when
@@ -1436,7 +1451,7 @@ Options.prototype.getColor = function() {
 
 module.exports = Options;
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 /**
  * This is the ParseError class, which is the main error thrown by KaTeX
  * functions when something has gone wrong. This is used to distinguish internal
@@ -1478,7 +1493,7 @@ ParseError.prototype.__proto__ = Error.prototype;
 
 module.exports = ParseError;
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 /* eslint no-constant-condition:0 */
 var functions = require("./functions");
 var environments = require("./environments");
@@ -2217,7 +2232,7 @@ Parser.prototype.ParseNode = ParseNode;
 
 module.exports = Parser;
 
-},{"./Lexer":8,"./ParseError":10,"./environments":20,"./functions":23,"./parseData":25,"./symbols":27,"./utils":28}],12:[function(require,module,exports){
+},{"./Lexer":9,"./ParseError":11,"./environments":21,"./functions":24,"./parseData":26,"./symbols":28,"./utils":29}],13:[function(require,module,exports){
 /**
  * This is a module for storing settings passed into KaTeX. It correctly handles
  * default settings.
@@ -2247,7 +2262,7 @@ function Settings(options) {
 
 module.exports = Settings;
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 /**
  * This file contains information and classes for the various kinds of styles
  * used in TeX. It provides a generic `Style` class, which holds information
@@ -2375,7 +2390,7 @@ module.exports = {
     SCRIPTSCRIPT: styles[SS],
 };
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 /* eslint no-console:0 */
 /**
  * This module contains general functions that can be used for building
@@ -2827,7 +2842,7 @@ module.exports = {
     spacingFunctions: spacingFunctions,
 };
 
-},{"./domTree":19,"./fontMetrics":21,"./symbols":27,"./utils":28}],15:[function(require,module,exports){
+},{"./domTree":20,"./fontMetrics":22,"./symbols":28,"./utils":29}],16:[function(require,module,exports){
 /* eslint no-console:0 */
 /**
  * This file does the main work of building a domTree structure from a parse
@@ -4231,7 +4246,7 @@ var buildHTML = function(tree, options) {
 
 module.exports = buildHTML;
 
-},{"./ParseError":10,"./Style":13,"./buildCommon":14,"./delimiter":18,"./domTree":19,"./fontMetrics":21,"./utils":28}],16:[function(require,module,exports){
+},{"./ParseError":11,"./Style":14,"./buildCommon":15,"./delimiter":19,"./domTree":20,"./fontMetrics":22,"./utils":29}],17:[function(require,module,exports){
 /**
  * This file converts a parse tree into a cooresponding MathML tree. The main
  * entry point is the `buildMathML` function, which takes a parse tree from the
@@ -4766,7 +4781,7 @@ var buildMathML = function(tree, texExpression, options) {
 
 module.exports = buildMathML;
 
-},{"./ParseError":10,"./buildCommon":14,"./fontMetrics":21,"./mathMLTree":24,"./symbols":27,"./utils":28}],17:[function(require,module,exports){
+},{"./ParseError":11,"./buildCommon":15,"./fontMetrics":22,"./mathMLTree":25,"./symbols":28,"./utils":29}],18:[function(require,module,exports){
 var buildHTML = require("./buildHTML");
 var buildMathML = require("./buildMathML");
 var buildCommon = require("./buildCommon");
@@ -4808,7 +4823,7 @@ var buildTree = function(tree, expression, settings) {
 
 module.exports = buildTree;
 
-},{"./Options":9,"./Settings":12,"./Style":13,"./buildCommon":14,"./buildHTML":15,"./buildMathML":16}],18:[function(require,module,exports){
+},{"./Options":10,"./Settings":13,"./Style":14,"./buildCommon":15,"./buildHTML":16,"./buildMathML":17}],19:[function(require,module,exports){
 /**
  * This file deals with creating delimiters of various sizes. The TeXbook
  * discusses these routines on page 441-442, in the "Another subroutine sets box
@@ -5352,7 +5367,7 @@ module.exports = {
     leftRightDelim: makeLeftRightDelim,
 };
 
-},{"./ParseError":10,"./Style":13,"./buildCommon":14,"./fontMetrics":21,"./symbols":27,"./utils":28}],19:[function(require,module,exports){
+},{"./ParseError":11,"./Style":14,"./buildCommon":15,"./fontMetrics":22,"./symbols":28,"./utils":29}],20:[function(require,module,exports){
 /**
  * These objects store the data about the DOM nodes we create, as well as some
  * extra data. They can then be transformed into real DOM nodes with the
@@ -5623,7 +5638,7 @@ module.exports = {
     symbolNode: symbolNode,
 };
 
-},{"./utils":28}],20:[function(require,module,exports){
+},{"./utils":29}],21:[function(require,module,exports){
 /* eslint no-constant-condition:0 */
 var fontMetrics = require("./fontMetrics");
 var parseData = require("./parseData");
@@ -5846,7 +5861,7 @@ defineEnvironment("aligned", {
     return res;
 });
 
-},{"./ParseError":10,"./fontMetrics":21,"./parseData":25}],21:[function(require,module,exports){
+},{"./ParseError":11,"./fontMetrics":22,"./parseData":26}],22:[function(require,module,exports){
 /* eslint no-unused-vars:0 */
 
 var Style = require("./Style");
@@ -5995,7 +6010,7 @@ module.exports = {
     getCharacterMetrics: getCharacterMetrics,
 };
 
-},{"./Style":13,"./fontMetricsData":22}],22:[function(require,module,exports){
+},{"./Style":14,"./fontMetricsData":23}],23:[function(require,module,exports){
 module.exports = {
     "AMS-Regular": {
         "65": [0, 0.68889, 0, 0],
@@ -7749,7 +7764,7 @@ module.exports = {
     },
 };
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 var utils = require("./utils");
 var ParseError = require("./ParseError");
 
@@ -8331,7 +8346,7 @@ defineFunction(["\\begin", "\\end"], {
     };
 });
 
-},{"./ParseError":10,"./utils":28}],24:[function(require,module,exports){
+},{"./ParseError":11,"./utils":29}],25:[function(require,module,exports){
 /**
  * These objects store data about MathML nodes. This is the MathML equivalent
  * of the types in domTree.js. Since MathML handles its own rendering, and
@@ -8435,7 +8450,7 @@ module.exports = {
     TextNode: TextNode,
 };
 
-},{"./utils":28}],25:[function(require,module,exports){
+},{"./utils":29}],26:[function(require,module,exports){
 /**
  * The resulting parse tree nodes of the parse tree.
  */
@@ -8450,7 +8465,7 @@ module.exports = {
 };
 
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 /**
  * Provides a single function for parsing an expression using a Parser
  * TODO(emily): Remove this
@@ -8469,7 +8484,7 @@ var parseTree = function(toParse, settings) {
 
 module.exports = parseTree;
 
-},{"./Parser":11}],27:[function(require,module,exports){
+},{"./Parser":12}],28:[function(require,module,exports){
 /**
  * This file holds a list of all no-argument functions and single-character
  * symbols (like 'a' or ';').
@@ -9091,7 +9106,7 @@ for (i = 0; i < letters.length; i++) {
     defineSymbol(text, main, textord, ch, ch);
 }
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 /**
  * This file contains a list of utility functions which are useful in other
  * files.
@@ -9199,7 +9214,7 @@ module.exports = {
     clearNode: clearNode,
 };
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 (function (global){
 
 /*
@@ -25422,7 +25437,7 @@ module.exports = {
 })();
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"canvas":96,"jsdom":96}],30:[function(require,module,exports){
+},{"canvas":97,"jsdom":97}],31:[function(require,module,exports){
 'use strict'
 
 var numberIsFinite = require('is-finite')
@@ -25438,7 +25453,7 @@ module.exports = function toPrecision (value, places) {
   return parseFloat(value.toFixed(places))
 }
 
-},{"is-finite":31,"is-integer":33}],31:[function(require,module,exports){
+},{"is-finite":32,"is-integer":34}],32:[function(require,module,exports){
 'use strict';
 var numberIsNan = require('number-is-nan');
 
@@ -25446,13 +25461,13 @@ module.exports = Number.isFinite || function (val) {
 	return !(typeof val !== 'number' || numberIsNan(val) || val === Infinity || val === -Infinity);
 };
 
-},{"number-is-nan":32}],32:[function(require,module,exports){
+},{"number-is-nan":33}],33:[function(require,module,exports){
 'use strict';
 module.exports = Number.isNaN || function (x) {
 	return x !== x;
 };
 
-},{}],33:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 // https://github.com/paulmillr/es6-shim
 // http://people.mozilla.org/~jorendorff/es6-draft.html#sec-number.isinteger
 var isFinite = require("is-finite");
@@ -25462,7 +25477,7 @@ module.exports = Number.isInteger || function(val) {
     Math.floor(val) === val;
 };
 
-},{"is-finite":31}],34:[function(require,module,exports){
+},{"is-finite":32}],35:[function(require,module,exports){
 (function (Buffer){
 var clone = (function() {
 'use strict';
@@ -25626,7 +25641,7 @@ if (typeof module === 'object' && module.exports) {
 }
 
 }).call(this,require("buffer").Buffer)
-},{"buffer":97}],35:[function(require,module,exports){
+},{"buffer":98}],36:[function(require,module,exports){
 var DOCUMENT_POSITION_CONTAINED_BY = 16
 
 module.exports = contains
@@ -25641,7 +25656,7 @@ function contains(container, elem) {
     return comparison === 0 || comparison & DOCUMENT_POSITION_CONTAINED_BY
 }
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 /*!
  * escape-html
  * Copyright(c) 2012-2013 TJ Holowaychuk
@@ -25721,7 +25736,7 @@ function escapeHtml(string) {
     : html;
 }
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 'use strict';
 
 var proto = Element.prototype;
@@ -25751,7 +25766,7 @@ function match(el, selector) {
   }
   return false;
 }
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 'use strict';
 var propIsEnumerable = Object.prototype.propertyIsEnumerable;
 
@@ -25792,7 +25807,7 @@ module.exports = Object.assign || function (target, source) {
 	return to;
 };
 
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -25811,7 +25826,7 @@ module.exports = function(){
 	return el
 }
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],40:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 'use strict';
 
 var toUpperFirst = require('./toUpperFirst')
@@ -25836,7 +25851,7 @@ module.exports = function(key, value){
 				prefix + toUpperFirst(key):
 				key
 }
-},{"./getPrefix":42,"./prefixProps":49,"./toUpperFirst":50}],41:[function(require,module,exports){
+},{"./getPrefix":43,"./prefixProps":50,"./toUpperFirst":51}],42:[function(require,module,exports){
 'use strict';
 
 var getPrefix     = require('./getPrefix')
@@ -25886,7 +25901,7 @@ module.exports = function(key, value, force){
 
     return value
 }
-},{"./el":39,"./forcePrefixed":40,"./getPrefix":42}],42:[function(require,module,exports){
+},{"./el":40,"./forcePrefixed":41,"./getPrefix":43}],43:[function(require,module,exports){
 'use strict';
 
 var toUpperFirst = require('./toUpperFirst')
@@ -25921,7 +25936,7 @@ module.exports = function(key){
 
 	return PREFIX
 }
-},{"./el":39,"./toUpperFirst":50}],43:[function(require,module,exports){
+},{"./el":40,"./toUpperFirst":51}],44:[function(require,module,exports){
 'use strict';
 
 var getStylePrefixed = require('./getStylePrefixed')
@@ -25935,7 +25950,7 @@ module.exports = function(key, value){
 
 	return getStylePrefixed(key, value)
 }
-},{"./getStylePrefixed":44,"./prefixProps":49}],44:[function(require,module,exports){
+},{"./getStylePrefixed":45,"./prefixProps":50}],45:[function(require,module,exports){
 'use strict';
 
 var toUpperFirst = require('./toUpperFirst')
@@ -25987,14 +26002,14 @@ module.exports = function(key, value){
 
     return key
 }
-},{"./el":39,"./getPrefix":42,"./toUpperFirst":50}],45:[function(require,module,exports){
+},{"./el":40,"./getPrefix":43,"./toUpperFirst":51}],46:[function(require,module,exports){
 'use strict';
 
 module.exports = function(obj, prop){
 	return Object.prototype.hasOwnProperty.call(obj, prop)
 }
 
-},{}],46:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 'use strict';
 
 var hasOwn      = require('./hasOwn')
@@ -26060,7 +26075,7 @@ var RESULT = function(style){
 }
 
 module.exports = plugable(RESULT)
-},{"./getPrefixed":43,"./hasOwn":45,"./map":47,"./plugable":48}],47:[function(require,module,exports){
+},{"./getPrefixed":44,"./hasOwn":46,"./map":48,"./plugable":49}],48:[function(require,module,exports){
 'use strict';
 
 module.exports = function(fn, item){
@@ -26077,7 +26092,7 @@ module.exports = function(fn, item){
 		return fn(item)
 	}
 }
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 'use strict';
 
 var getCssPrefixedValue = require('./getCssPrefixedValue')
@@ -26109,7 +26124,7 @@ module.exports = function(target){
 
 	return target
 }
-},{"./getCssPrefixedValue":41}],49:[function(require,module,exports){
+},{"./getCssPrefixedValue":42}],50:[function(require,module,exports){
 'use strict';
 
 module.exports = {
@@ -26153,7 +26168,7 @@ module.exports = {
   'appearance': 1
 }
 
-},{}],50:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 'use strict';
 
 module.exports = function(str){
@@ -26161,7 +26176,7 @@ module.exports = function(str){
 			str.charAt(0).toUpperCase() + str.slice(1):
 			''
 }
-},{}],51:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 'use strict';
 
 var Region = require('region')
@@ -26199,7 +26214,7 @@ Region.prototype.alignToRegion = function(region, alignPositions){
 
     return this
 }
-},{"region":56}],52:[function(require,module,exports){
+},{"region":57}],53:[function(require,module,exports){
 'use strict'
 
 var Region = require('region')
@@ -26316,7 +26331,7 @@ Region.alignToPoint = function(region, point, anchor){
 
     return region
 }
-},{"region":56}],53:[function(require,module,exports){
+},{"region":57}],54:[function(require,module,exports){
 'use strict'
 
 var Region = require('region')
@@ -26494,7 +26509,7 @@ function ALIGN_TO_NORMALIZED(sourceRegion, targetRegion, positions, config){
 }
 
 module.exports = ALIGN_TO_NORMALIZED
-},{"region":56}],54:[function(require,module,exports){
+},{"region":57}],55:[function(require,module,exports){
 'use strict'
 
 var ALIGN_TO_NORMALIZED = require('./alignToNormalized')
@@ -26571,7 +26586,7 @@ function COMPUTE_ALIGN_REGION(sourceRegion, targetRegion, positions, config){
 
 
 module.exports = COMPUTE_ALIGN_REGION
-},{"./alignToNormalized":53,"region":56}],55:[function(require,module,exports){
+},{"./alignToNormalized":54,"region":57}],56:[function(require,module,exports){
 'use strict';
 
 var Region = require('region')
@@ -26753,9 +26768,9 @@ Region.prototype.alignTo = function(target, positions, config){
 }
 
 module.exports = Region
-},{"./Region.proto":51,"./Region.static":52,"./computeAlignRegion":54,"region":56}],56:[function(require,module,exports){
+},{"./Region.proto":52,"./Region.static":53,"./computeAlignRegion":55,"region":57}],57:[function(require,module,exports){
 module.exports = require('./src')
-},{"./src":61}],57:[function(require,module,exports){
+},{"./src":62}],58:[function(require,module,exports){
 'use strict'
 
 var hasOwn = Object.prototype.hasOwnProperty
@@ -26794,7 +26809,7 @@ function curry(fn, n){
 module.exports = curry(function(object, property){
     return hasOwn.call(object, property)
 })
-},{}],58:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 module.exports = function(){
 
     'use strict';
@@ -26823,13 +26838,13 @@ module.exports = function(){
     }
 
 }()
-},{}],59:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 var getInstantiatorFunction = require('./getInstantiatorFunction')
 
 module.exports = function(fn, args){
 	return getInstantiatorFunction(args.length)(fn, args)
 }
-},{"./getInstantiatorFunction":58}],60:[function(require,module,exports){
+},{"./getInstantiatorFunction":59}],61:[function(require,module,exports){
 'use strict';
 
 function ToObject(val) {
@@ -26857,7 +26872,7 @@ module.exports = Object.assign || function (target, source) {
 	return to;
 };
 
-},{}],61:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 'use strict';
 
 var hasOwn    = require('hasown')
@@ -27909,7 +27924,7 @@ Object.defineProperties(REGION.prototype, {
 require('./statics')(REGION)
 
 module.exports = REGION
-},{"./inherits":62,"./statics":63,"./validate":64,"events":101,"hasown":57,"newify":59,"object-assign":60}],62:[function(require,module,exports){
+},{"./inherits":63,"./statics":64,"./validate":65,"events":102,"hasown":58,"newify":60,"object-assign":61}],63:[function(require,module,exports){
 'use strict';
 
 module.exports = function(ctor, superCtor) {
@@ -27923,7 +27938,7 @@ module.exports = function(ctor, superCtor) {
         }
     })
 }
-},{}],63:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 'use strict';
 
 var hasOwn   = require('hasown')
@@ -28138,7 +28153,7 @@ module.exports = function(REGION){
 
     REGION.init()
 }
-},{"./validate":64,"hasown":57}],64:[function(require,module,exports){
+},{"./validate":65,"hasown":58}],65:[function(require,module,exports){
 'use strict';
 
 /**
@@ -28166,7 +28181,7 @@ module.exports = function validate(region){
 
     return isValid
 }
-},{}],65:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 'use strict'
 
 module.exports = {
@@ -28175,9 +28190,9 @@ module.exports = {
    object: require('./src/toStyleObject'),
    string: require('./src/toStyleString')
 }
-},{"./src/cssUnitless":67,"./src/prefixProperties":72,"./src/toStyleObject":80,"./src/toStyleString":81}],66:[function(require,module,exports){
+},{"./src/cssUnitless":68,"./src/prefixProperties":73,"./src/toStyleObject":81,"./src/toStyleString":82}],67:[function(require,module,exports){
 module.exports = require('./prefixer')()
-},{"./prefixer":73}],67:[function(require,module,exports){
+},{"./prefixer":74}],68:[function(require,module,exports){
 'use exports'
 
 //make sure properties are in hyphenated form
@@ -28200,7 +28215,7 @@ module.exports = {
     'colspan'      : 1,
     'rowspan'      : 1
 }
-},{}],68:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 'use strict'
 
 var objectHasOwn = Object.prototype.hasOwnProperty
@@ -28208,7 +28223,7 @@ var objectHasOwn = Object.prototype.hasOwnProperty
 module.exports = function(object, propertyName){
     return objectHasOwn.call(object, propertyName)
 }
-},{}],69:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 'use strict'
 
 var objectToString = Object.prototype.toString
@@ -28217,7 +28232,7 @@ module.exports = function(v) {
     return objectToString.apply(v) === '[object Function]'
 }
 
-},{}],70:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
 'use strict'
 
 var objectToString = Object.prototype.toString
@@ -28227,7 +28242,7 @@ module.exports = function(v){
 }
 
 
-},{}],71:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 'use strict';
 
 var toUpperFirst = require('./stringUtils/toUpperFirst')
@@ -28279,7 +28294,7 @@ var prefixInfo = (function(){
 })()
 
 module.exports = prefixInfo
-},{"./stringUtils/toUpperFirst":79}],72:[function(require,module,exports){
+},{"./stringUtils/toUpperFirst":80}],73:[function(require,module,exports){
 module.exports = {
     'border-radius'              : 1,
     'border-top-left-radius'     : 1,
@@ -28305,7 +28320,7 @@ module.exports = {
     'perspective'                : 1,
     'box-pack'                   : 1
 }
-},{}],73:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 'use strict'
 
 var camelize     = require('./stringUtils/camelize')
@@ -28386,7 +28401,7 @@ module.exports = function(asStylePrefix){
         return result
     }
 }
-},{"./prefixInfo":71,"./prefixProperties":72,"./stringUtils/camelize":74,"./stringUtils/hyphenate":76,"./stringUtils/toLowerFirst":78,"./stringUtils/toUpperFirst":79}],74:[function(require,module,exports){
+},{"./prefixInfo":72,"./prefixProperties":73,"./stringUtils/camelize":75,"./stringUtils/hyphenate":77,"./stringUtils/toLowerFirst":79,"./stringUtils/toUpperFirst":80}],75:[function(require,module,exports){
 'use strict'
 
 var toCamelFn = function(str, letter){
@@ -28400,9 +28415,9 @@ module.exports = function(str){
           str.replace(hyphenRe, toCamelFn):
           ''
 }
-},{"./hyphenRe":75}],75:[function(require,module,exports){
+},{"./hyphenRe":76}],76:[function(require,module,exports){
 module.exports = /[-\s]+(.)?/g
-},{}],76:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 'use strict'
 
 var separate = require('./separate')
@@ -28410,7 +28425,7 @@ var separate = require('./separate')
 module.exports = function(name){
    return separate(name).toLowerCase()
 }
-},{"./separate":77}],77:[function(require,module,exports){
+},{"./separate":78}],78:[function(require,module,exports){
 'use strict'
 
 var doubleColonRe      = /::/g
@@ -28428,7 +28443,7 @@ module.exports = function(name, separator){
             :
             ''
 }
-},{}],78:[function(require,module,exports){
+},{}],79:[function(require,module,exports){
 'use strict'
 
 module.exports = function(value){
@@ -28436,7 +28451,7 @@ module.exports = function(value){
                 value.charAt(0).toLowerCase() + value.substring(1):
                 value
 }
-},{}],79:[function(require,module,exports){
+},{}],80:[function(require,module,exports){
 'use strict'
 
 module.exports = function(value){
@@ -28444,7 +28459,7 @@ module.exports = function(value){
                 value.charAt(0).toUpperCase() + value.substring(1):
                 value
 }
-},{}],80:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 'use strict'
 
 var prefixInfo  = require('./prefixInfo')
@@ -28670,7 +28685,7 @@ var TO_STYLE_OBJECT = function(styles, config, prepend, result){
 }
 
 module.exports = TO_STYLE_OBJECT
-},{"./cssPrefix":66,"./cssUnitless":67,"./hasOwn":68,"./isFunction":69,"./isObject":70,"./prefixInfo":71,"./stringUtils/camelize":74,"./stringUtils/hyphenate":76}],81:[function(require,module,exports){
+},{"./cssPrefix":67,"./cssUnitless":68,"./hasOwn":69,"./isFunction":70,"./isObject":71,"./prefixInfo":72,"./stringUtils/camelize":75,"./stringUtils/hyphenate":77}],82:[function(require,module,exports){
 'use strict'
 
 var toStyleObject = require('./toStyleObject')
@@ -28702,7 +28717,7 @@ module.exports = function(styles, config){
 
     return result.join('; ')
 }
-},{"./hasOwn":68,"./toStyleObject":80}],82:[function(require,module,exports){
+},{"./hasOwn":69,"./toStyleObject":81}],83:[function(require,module,exports){
 'use strict';
 
 var assign = require('object-assign')
@@ -28768,7 +28783,7 @@ module.exports = function(values){
 
     return config
 }
-},{"./preparePositions":89,"clone":34,"object-assign":38}],83:[function(require,module,exports){
+},{"./preparePositions":90,"clone":35,"object-assign":39}],84:[function(require,module,exports){
 'use strict';
 
 var matches = require('matches-selector')
@@ -28793,7 +28808,7 @@ module.exports = function(root, selector){
 
 	}
 }
-},{"matches-selector":37}],84:[function(require,module,exports){
+},{"matches-selector":38}],85:[function(require,module,exports){
 'use strict';
 
 var throttle  = require('./throttle')
@@ -28858,7 +28873,7 @@ var TOOLTIP = function(cfg){
 }
 
 module.exports = TOOLTIP
-},{"./config":82,"./mouseenter":86,"./mouseleave":87,"./target":91,"./throttle":92,"contains":35}],85:[function(require,module,exports){
+},{"./config":83,"./mouseenter":87,"./mouseleave":88,"./target":92,"./throttle":93,"contains":36}],86:[function(require,module,exports){
 'use strict';
 
 module.exports = function mapObject(obj, fn){
@@ -28871,7 +28886,7 @@ module.exports = function mapObject(obj, fn){
 
     return result
 }
-},{}],86:[function(require,module,exports){
+},{}],87:[function(require,module,exports){
 'use strict';
 
 var testEventMatches = require('../eventMatches');
@@ -28917,7 +28932,7 @@ module.exports = function(el, selector, fn, config){
     }
 }
 
-},{"../eventMatches":83}],87:[function(require,module,exports){
+},{"../eventMatches":84}],88:[function(require,module,exports){
 'use strict';
 
 var testEventMatches = require('../eventMatches');
@@ -28967,7 +28982,7 @@ module.exports = function(el, selector, fn, config){
     }
 }
 
-},{"../eventMatches":83}],88:[function(require,module,exports){
+},{"../eventMatches":84}],89:[function(require,module,exports){
 'use strict';
 
 module.exports = function(str){
@@ -28984,7 +28999,7 @@ module.exports = function(str){
 
 	return result
 }
-},{}],89:[function(require,module,exports){
+},{}],90:[function(require,module,exports){
 'use strict';
 
 var TRANSLATE_POS = {
@@ -29015,7 +29030,7 @@ module.exports = function preparePositions(positions){
         return !!pos
     })
 }
-},{}],90:[function(require,module,exports){
+},{}],91:[function(require,module,exports){
 'use strict';
 
 var toStyleObject = require('to-style').object
@@ -29049,7 +29064,7 @@ module.exports = function(element, style /*, style2 */){
 
 	return element
 }
-},{"object-assign":38,"react-style-normalizer":46,"to-style":65}],91:[function(require,module,exports){
+},{"object-assign":39,"react-style-normalizer":47,"to-style":66}],92:[function(require,module,exports){
 'use strict';
 
 var Region = require('region-align')
@@ -29218,7 +29233,7 @@ module.exports = function(config){
     }
 
 }
-},{"./mapObject":85,"./parseAsStyle":88,"./preparePositions":89,"./setStyle":90,"./toOffset":93,"./tooltipElement":94,"escape-html":36,"object-assign":38,"region-align":55}],92:[function(require,module,exports){
+},{"./mapObject":86,"./parseAsStyle":89,"./preparePositions":90,"./setStyle":91,"./toOffset":94,"./tooltipElement":95,"escape-html":37,"object-assign":39,"region-align":56}],93:[function(require,module,exports){
 'use strict';
 
 module.exports = function(fn, delay, scope) {
@@ -29253,7 +29268,7 @@ module.exports = function(fn, delay, scope) {
     }
 
 }
-},{}],93:[function(require,module,exports){
+},{}],94:[function(require,module,exports){
 'use strict';
 
 var signs = {
@@ -29330,7 +29345,7 @@ module.exports = function(offset, positions){
 		return [x * xSign, y * ySign]
 	})
 }
-},{}],94:[function(require,module,exports){
+},{}],95:[function(require,module,exports){
 'use strict';
 
 var setStyle = require('./setStyle')
@@ -29365,15 +29380,15 @@ result.destroy = function(config){
 }
 
 module.exports = result
-},{"./setStyle":90}],95:[function(require,module,exports){
+},{"./setStyle":91}],96:[function(require,module,exports){
 var Katex = require('katex');
 var Konva = require('konva');
-// var MathJax = require('mathjax');
 
 var debounce = require('debounce');
 var bezier2 = require('./bezier2');
+var linearTween = require('./linear-tween');
 
-module.exports = PolyLaunch = function (callback) {
+module.exports = function(callback) {
 
   // Override pixelRatio
   Konva.pixelRatio = window.devicePixelRatio;
@@ -29391,11 +29406,6 @@ module.exports = PolyLaunch = function (callback) {
 
     this.height = height;
     this.width = width;
-    
-    this._launcherManager = new LauncherManager();
-    this._pipeManager = new PipeManager();
-    this._obstacleManager = new ObstacleManager();
-    this._targetManager = new TargetManager();
 
     this._pipes = [];
 
@@ -29405,6 +29415,8 @@ module.exports = PolyLaunch = function (callback) {
       width: width,
     });
 
+    this._freeAnimationLayers = [];
+    this._usedAnimationLayers = [];
     this._pipeLayer = new Konva.Layer();
 
     this._stage.add(this._pipeLayer);
@@ -29486,10 +29498,31 @@ module.exports = PolyLaunch = function (callback) {
     }
   };
 
+  App.prototype.requestAnimationLayer = function(callback) {
+    var animLayer = this._freeAnimationLayers.length
+      ? this._freeAnimationLayers.shift()
+      : new Konva.Layer();
+    
+    this._stage.add(animLayer);
+    // this._usedAnimationLayers.push(animLayer);
+
+    function destroy() {
+      // this._usedAnimationLayers.remove(animLayer); 
+      anim.layer.clear();
+      this._freeAnimationLayers.push(animLayer);
+    }
+
+    callback(animLayer, destroy);
+  };
+
   var QuadraticPipe = function(app, layer, jax, x0, y0, x1, y1, x2, y2) {
     this._app = app;
     this._layer = layer;
     this._jax = jax;
+
+    this._controlPoint = {x: x1, y: y1};
+    this._endPoint = {x: x2, y: y2};
+    this._startPoint = {x: x0, y: y0};
 
     var xMax = Math.max(x0, x1, x2);
     var xMin = Math.min(x0, x1, x2);
@@ -29572,6 +29605,26 @@ module.exports = PolyLaunch = function (callback) {
       this._app.revertCursor();
     }.bind(this));
 
+    this._group.on('dblclick', function(event) {
+      this._group.hide();
+      this._app.draw();
+
+      var x = this._group.x();
+      var y = this._group.y();
+
+      this._app.requestAnimationLayer(function(layer, destroy) {
+        var anim = new QuadraticPipeAnimation(
+          layer,
+          {x: x + this._controlPoint.x, y: y + this._controlPoint.y},
+          {x: x + this._startPoint.x, y: y + this._startPoint.y},
+          {x: x + this._endPoint.x, y: y + this._endPoint.y},
+          2000
+        );
+
+        anim.play();
+      }.bind(this));
+    }.bind(this));
+
     var pointMouseEnterHandler = function(event) {
       event.target.setStrokeWidth(2).setRadius(7);
       this._app.setCursor('default');
@@ -29626,13 +29679,13 @@ module.exports = PolyLaunch = function (callback) {
 
       this._app.draw();
     }.bind(this));
-
-    this._controlPoint = {x: x1, y: y1};
-    this._endPoint = {x: x2, y: y2};
-    this._startPoint = {x: x0, y: y0};
   };
 
-  QuadraticPipe.prototype.draw = function() {
+  QuadraticPipe.prototype.animate = function() {
+    
+  };
+
+  QuadraticPipe.prototype.unanimate = function() {
 
   };
 
@@ -29652,6 +29705,10 @@ module.exports = PolyLaunch = function (callback) {
     return this._startPoint;
   };
 
+  QuadraticPipe.prototype.hide = function() {
+    this._group.hide();
+  };
+
   QuadraticPipe.prototype.setControlPoint = function(point) {
     this._controlPoint = point;
   }
@@ -29662,6 +29719,10 @@ module.exports = PolyLaunch = function (callback) {
 
   QuadraticPipe.prototype.setStartPoint = function(point) {
     this._startPoint = point;
+  };
+
+  QuadraticPipe.prototype.show = function() {
+    this._group.show();
   };
 
   QuadraticPipe.prototype.updateBoundingBox = function() {
@@ -29701,44 +29762,182 @@ module.exports = PolyLaunch = function (callback) {
     );
   }, 100);
 
-  QuadraticPipe.prototype.onUpdate = function(tex) {
-    this._updateHandler && this._updateHandler(tex);
+  QuadraticPipeAnimation = function(layer, controlPoint, startPoint, endPoint, duration) {
+    this._controlPoint = controlPoint;
+    this._duration = duration || 3000;
+    this._endPoint = endPoint;
+    this._layer = layer;
+    this._progress = 0;
+    this._startPoint = startPoint;
+
+    this._controlAnchor = new Konva.Circle({
+      fill: 'pink',
+      radius: 5,
+      stroke: 'red',
+      strokeWidth: 1,
+      x: controlPoint.x,
+      y: controlPoint.y
+    });
+
+    this._endAnchor = new Konva.Circle({
+      fill: '#eee',
+      radius: 5,
+      stroke: '#222',
+      strokeWidth: 1,
+      x: endPoint.x,
+      y: endPoint.y
+    });
+
+    this._startAnchor = new Konva.Circle({
+      fill: '#eee',
+      radius: 5,
+      stroke: '#222',
+      strokeWidth: 1,
+      x: startPoint.x,
+      y: startPoint.y
+    });
+    
+    this._curve = new Konva.Shape({
+      sceneFunc: function(ctx) {
+        var controlPoint = this.attrs.controlPoint;
+        var endPoint = this.attrs.endPoint; 
+        var startPoint = this.attrs.startPoint;
+
+        ctx.beginPath();
+        ctx.moveTo(startPoint.x, startPoint.y);
+        ctx.quadraticCurveTo(controlPoint.x, controlPoint.y, endPoint.x, endPoint.y);
+        ctx.strokeShape(this);
+      },
+      stroke: '#222',
+      startPoint: {x: startPoint.x, y: startPoint.y},
+      controlPoint: {x: startPoint.x, y: startPoint.y},
+      endPoint: {x: startPoint.x, y: startPoint.y}
+    });
+
+    this._lineA = new Konva.Line({
+      points: [
+        this._startPoint.x, this._startPoint.y,
+        this._controlPoint.x, this._controlPoint.y
+      ],
+      stroke: '#222',
+      strokeWidth: 1,
+    });
+
+    this._lineB = new Konva.Line({
+      points: [
+        this._controlPoint.x, this._controlPoint.y,
+        this._endPoint.x, this._endPoint.y
+      ],
+      stroke: '#222',
+      strokeWidth: 1,
+    });
+
+    this._animPointA = {x: startPoint.x, y: startPoint.y};
+    this._animPointB = {x: controlPoint.x, y: controlPoint.y};
+
+    this._tweenAB = linearTween(startPoint.x, startPoint.y, controlPoint.x, controlPoint.y);
+    this._tweenBC = linearTween(controlPoint.x, controlPoint.y, endPoint.x, endPoint.y);
+
+    this._animAnchorA = new Konva.Circle({
+      fill: 'aliceblue',
+      radius: 5,
+      stroke: 'blue',
+      strokeWidth: 1,
+      x: startPoint.x,
+      y: startPoint.y
+    });
+
+    this._animAnchorB = new Konva.Circle({
+      fill: 'aliceblue',
+      radius: 5,
+      stroke: 'blue',
+      strokeWidth: 1,
+      x: controlPoint.x,
+      y: controlPoint.y
+    }); 
+
+    this._animAnchorC = new Konva.Circle({
+      fill: 'lightgreen',
+      radius: 5,
+      stroke: 'green',
+      strokeWidth: 1,
+      x: startPoint.x,
+      y: startPoint.y
+    });
+
+    this._animLine = new Konva.Line({
+      points: [
+        this._animPointA.x, this._animPointA.y,
+        this._animPointB.x, this._animPointB.y
+      ],
+      stroke: 'blue',
+      strokeWidth: 2,
+    });
+
+    this._layer.add(this._lineA);
+    this._layer.add(this._lineB);
+    this._layer.add(this._curve);
+    this._layer.add(this._controlAnchor);
+    this._layer.add(this._endAnchor);
+    this._layer.add(this._startAnchor);
+    this._layer.add(this._animLine);
+    this._layer.add(this._animAnchorA);
+    this._layer.add(this._animAnchorB);
+    this._layer.add(this._animAnchorC);
+
+    this._anim = new Konva.Animation(
+      this._tick.bind(this),
+      layer
+    ); 
   };
 
-  var CubicPipe = function() {
+  QuadraticPipeAnimation.prototype._tick = function(frame) {
+    var progress = this._progress = (this._progress + 0.005) % 1;
+
+    var ab = this._tweenAB(progress);
+    var bc = this._tweenBC(progress);
+
+    var penTween = linearTween(ab.x, ab.y, bc.x, bc.y);
+    var pen = penTween(progress);
+
+    this._animAnchorA.setX(ab.x).setY(ab.y);
+    this._animAnchorB.setX(bc.x).setY(bc.y);
+    this._animAnchorC.setX(pen.x).setY(pen.y);
+    this._animLine.setPoints([ab.x, ab.y, bc.x, bc.y]);
+    this._curve.setAttrs({
+      endPoint: {x: pen.x, y: pen.y},
+      controlPoint: {x: ab.x, y: ab.y}
+    });
+  };
+
+  QuadraticPipeAnimation.prototype.pause = function() {
 
   };
 
-  var LauncherManager = function() {
+  QuadraticPipeAnimation.prototype.play = function() {
+    this._anim.start();
+  };
+
+  QuadraticPipeAnimation.prototype.reset = function() {
 
   };
 
-  var PipeManager = function() {
+  QuadraticPipeAnimation.prototype.seek = function(position) {
 
   };
 
-  var ObstacleManager = function() {
-
-  };
-
-  var TargetManager = function() {
-
+  QuadraticPipeAnimation.prototype.stop = function() {
+    this._anim.stop();
   };
 
   callback({
     App: App,
-    QuadraticPipe: QuadraticPipe,
-    CubicPipe: CubicPipe,
-    LauncherManager: LauncherManager,
-    PipeManager: PipeManager,
-    ObstacleManager: ObstacleManager,
-    TargetManager: TargetManager
   });
 };
 
-},{"./bezier2":2,"debounce":3,"katex":6,"konva":29}],96:[function(require,module,exports){
+},{"./bezier2":2,"./linear-tween":3,"debounce":4,"katex":7,"konva":30}],97:[function(require,module,exports){
 
-},{}],97:[function(require,module,exports){
+},{}],98:[function(require,module,exports){
 (function (global){
 /*!
  * The buffer module from node.js, for the browser.
@@ -31453,7 +31652,7 @@ function isnan (val) {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"base64-js":98,"ieee754":99,"isarray":100}],98:[function(require,module,exports){
+},{"base64-js":99,"ieee754":100,"isarray":101}],99:[function(require,module,exports){
 'use strict'
 
 exports.toByteArray = toByteArray
@@ -31564,7 +31763,7 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],99:[function(require,module,exports){
+},{}],100:[function(require,module,exports){
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
   var eLen = nBytes * 8 - mLen - 1
@@ -31650,14 +31849,14 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],100:[function(require,module,exports){
+},{}],101:[function(require,module,exports){
 var toString = {}.toString;
 
 module.exports = Array.isArray || function (arr) {
   return toString.call(arr) == '[object Array]';
 };
 
-},{}],101:[function(require,module,exports){
+},{}],102:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
