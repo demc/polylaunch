@@ -1,16 +1,25 @@
+var Katex = require('katex');
 var Konva = require('konva');
+// var MathJax = require('mathjax');
 
 var debounce = require('debounce');
+var bezier2 = require('./bezier2');
 
 module.exports = PolyLaunch = function (callback) {
 
   // Override pixelRatio
   Konva.pixelRatio = window.devicePixelRatio;
 
-  var App = function(containerName, width, height) {
+  var App = function(containerId, sketchpadId, width, height) {
     if (!(this instanceof App)) {
-      return new App(containerName, width, height);
+      return new App(containerId, sketchpadId, width, height);
     }
+
+    this._containerId = containerId;
+    this._sketchpadId = sketchpadId;
+
+    this._sketchpadHeight = 150;
+    this._stageHeight = height - this._sketchpadHeight;
 
     this.height = height;
     this.width = width;
@@ -23,8 +32,8 @@ module.exports = PolyLaunch = function (callback) {
     this._pipes = [];
 
     this._stage = new Konva.Stage({
-      container: containerName,
-      height: height,
+      container: containerId,
+      height: this._stageHeight,
       width: width,
     });
 
@@ -35,18 +44,15 @@ module.exports = PolyLaunch = function (callback) {
     this._registerHandlers();
   };
 
+  App.prototype.getSketchpadHeight = function() {
+    return this._sketchpadHeight;
+  };
+
+  App.prototype.getStageHeight = function() {
+    return this._stageHeight;
+  };
+
   App.prototype._registerHandlers = function() {
-    var content = this._stage.getContent();
-    content.addEventListener('click', function(event) {
-      var x0 = event.x;
-      var y0 = event.y;
-
-      if (!this._pipeLayer.getIntersection({x: x0, y: y0})) {
-        var pipe = new QuadraticPipe(this, this._pipeLayer, x0, y0, x0 + 50, y0 + 50, x0 + 100, y0 + 100);
-        this.addPipe(pipe);
-      }
-    }.bind(this));
-
     var container = this._stage.getContainer();
     container.addEventListener('touchmove', function(event) {
       event.preventDefault();
@@ -59,8 +65,34 @@ module.exports = PolyLaunch = function (callback) {
     this._pipeLayer.draw();
   };
 
+  App.prototype.createPipeAt = function(x, y) {
+    if (!this._pipeLayer.getIntersection({x: x, y: y})) {
+      var node = document.createElement('div');
+      var sketchpad = document.getElementById(this._sketchpadId);
+      sketchpad.appendChild(node);
+
+      var pipe = new QuadraticPipe(
+        this,
+        this._pipeLayer,
+        node,
+        x,
+        y,
+        x + 50,
+        y + 50,
+        x + 100,
+        y + 100
+      );
+
+      this.addPipe(pipe);
+    }
+  };
+
   App.prototype.draw = function() {
     this._stage.draw();
+  };
+
+  App.prototype.getPipeCount = function() {
+    return this._pipes.length;
   };
 
   App.prototype.setCursor = function(cursor) {
@@ -73,7 +105,7 @@ module.exports = PolyLaunch = function (callback) {
     this.width = width;
 
     this._stage.setSize({
-      height: height,
+      height: height - this._sketchpadHeight,
       width: width
     });
 
@@ -86,9 +118,10 @@ module.exports = PolyLaunch = function (callback) {
     }
   };
 
-  var QuadraticPipe = function(app, layer, x0, y0, x1, y1, x2, y2) {
+  var QuadraticPipe = function(app, layer, jax, x0, y0, x1, y1, x2, y2) {
     this._app = app;
     this._layer = layer;
+    this._jax = jax;
 
     var xMax = Math.max(x0, x1, x2);
     var xMin = Math.min(x0, x1, x2);
@@ -161,7 +194,7 @@ module.exports = PolyLaunch = function (callback) {
     this._group.add(this._boundingBox);
     this._group.add(this._controlAnchor);
     this._group.add(this._endAnchor);
-    this._group.add(this._startAnchor);   
+    this._group.add(this._startAnchor);  
 
     this._boundingBox.on('mouseenter', function(event) {
       this._app.setCursor('move');        
@@ -197,6 +230,7 @@ module.exports = PolyLaunch = function (callback) {
       this.setControlPoint({x: x, y: y});
       this.updateBoundingBox();
       this.updateCurve();
+      this.updateJax();
 
       this._app.draw();
     }.bind(this));
@@ -208,6 +242,7 @@ module.exports = PolyLaunch = function (callback) {
       this.setEndPoint({x: x, y: y});
       this.updateBoundingBox();
       this.updateCurve();
+      this.updateJax();
 
       this._app.draw();
     }.bind(this));
@@ -219,6 +254,7 @@ module.exports = PolyLaunch = function (callback) {
       this.setStartPoint({x: x, y: y});
       this.updateBoundingBox();
       this.updateCurve();
+      this.updateJax();
 
       this._app.draw();
     }.bind(this));
@@ -282,6 +318,23 @@ module.exports = PolyLaunch = function (callback) {
       endPoint: this._endPoint,
       startPoint: this._startPoint
     });
+  };
+
+  QuadraticPipe.prototype.updateJax = debounce(function() {
+    var b = bezier2(this._controlPoint, this._startPoint, this._endPoint);
+    
+    Katex.render(
+      '\\begin{cases}' +
+      b.x.toTex() + '\\\\' +
+      b.y.toTex() +
+      '\\end{cases}' +
+      '\\text{for } t \\text{ 0 to 1}', 
+      this._jax
+    );
+  }, 100);
+
+  QuadraticPipe.prototype.onUpdate = function(tex) {
+    this._updateHandler && this._updateHandler(tex);
   };
 
   var CubicPipe = function() {

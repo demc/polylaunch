@@ -5,7 +5,10 @@
   "dependencies": {
     "debounce": "*",
 	  "fastclick": "1.0.6",
+    "katex": "0.6.0",
     "konva": "0.12.4",
+    "round-precision": "*",
+    "tooltip": "*",
     "watchify": "*"
   },
   "main": "index.js",
