@@ -12,9 +12,9 @@ function bezier2(name, p0, p1, p2) {
   interpolator.toTex = function() {
     return (
       name + ' = ' +
-      roundPrecision(p0, 2) + '(1-t)^2 + ' +
-      roundPrecision(p1 * 2, 2) + '(1-t)t + ' +
-      roundPrecision(p2, 2) + 't^2'
+      '\\color{green}{' + roundPrecision(p0, 2) + '}\\times (1-t)^2 + ' +
+      '\\color{red}{' + roundPrecision(p1, 2) + '}\\times 2(1-t)t + ' +
+      '\\color{blue}{' + roundPrecision(p2, 2) + '}\\times t^2'
     );  
   };
 

@@ -121,10 +121,8 @@ module.exports = function(callback) {
       : new Konva.Layer();
     
     this._stage.add(animLayer);
-    // this._usedAnimationLayers.push(animLayer);
 
-    function destroy() {
-      // this._usedAnimationLayers.remove(animLayer); 
+    function destroy() { 
       anim.layer.clear();
       this._freeAnimationLayers.push(animLayer);
     }
@@ -188,9 +186,9 @@ module.exports = function(callback) {
 
     this._endAnchor = new Konva.Circle({
       draggable: true,
-      fill: '#eee',
+      fill: 'lightblue',
       radius: 5,
-      stroke: '#222',
+      stroke: 'blue',
       strokeWidth: 1,
       x: x2,
       y: y2
@@ -198,9 +196,9 @@ module.exports = function(callback) {
 
     this._startAnchor = new Konva.Circle({
       draggable: true,    
-      fill: '#eee',
+      fill: 'lightgreen',
       radius: 5,
-      stroke: '#222',
+      stroke: 'green',
       strokeWidth: 1,
       x: x0,
       y: y0
@@ -397,18 +395,18 @@ module.exports = function(callback) {
     });
 
     this._endAnchor = new Konva.Circle({
-      fill: '#eee',
+      fill: 'lightblue',
       radius: 5,
-      stroke: '#222',
+      stroke: 'blue',
       strokeWidth: 1,
       x: endPoint.x,
       y: endPoint.y
     });
 
     this._startAnchor = new Konva.Circle({
-      fill: '#eee',
+      fill: 'lightgreen',
       radius: 5,
-      stroke: '#222',
+      stroke: 'green',
       strokeWidth: 1,
       x: startPoint.x,
       y: startPoint.y
@@ -456,27 +454,25 @@ module.exports = function(callback) {
     this._tweenBC = linearTween(controlPoint.x, controlPoint.y, endPoint.x, endPoint.y);
 
     this._animAnchorA = new Konva.Circle({
-      fill: 'aliceblue',
-      radius: 5,
-      stroke: 'blue',
+      fill: '#222',
+      radius: 3,
       strokeWidth: 1,
       x: startPoint.x,
       y: startPoint.y
     });
 
     this._animAnchorB = new Konva.Circle({
-      fill: 'aliceblue',
-      radius: 5,
-      stroke: 'blue',
+      fill: '#222',
+      radius: 3,
       strokeWidth: 1,
       x: controlPoint.x,
       y: controlPoint.y
     }); 
 
     this._animAnchorC = new Konva.Circle({
-      fill: 'lightgreen',
+      fill: '#ccc',
       radius: 5,
-      stroke: 'green',
+      stroke: '#222',
       strokeWidth: 1,
       x: startPoint.x,
       y: startPoint.y
@@ -487,8 +483,8 @@ module.exports = function(callback) {
         this._animPointA.x, this._animPointA.y,
         this._animPointB.x, this._animPointB.y
       ],
-      stroke: 'blue',
-      strokeWidth: 2,
+      stroke: '#222',
+      strokeWidth: 1,
     });
 
     this._layer.add(this._lineA);
