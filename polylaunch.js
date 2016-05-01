@@ -18,9 +18,6 @@ module.exports = function(callback) {
     this._containerId = containerId;
     this._sketchpadId = sketchpadId;
 
-    this._sketchpadHeight = 150;
-    this._stageHeight = height - this._sketchpadHeight;
-
     this.height = height;
     this.width = width;
 
@@ -28,7 +25,7 @@ module.exports = function(callback) {
 
     this._stage = new Konva.Stage({
       container: containerId,
-      height: this._stageHeight,
+      height: height,
       width: width,
     });
 
@@ -65,6 +62,8 @@ module.exports = function(callback) {
   App.prototype.createPipeAt = function(x, y) {
     if (!this._pipeLayer.getIntersection({x: x, y: y})) {
       var node = document.createElement('div');
+      node.className = 'formula';
+
       var sketchpad = document.getElementById(this._sketchpadId);
       sketchpad.appendChild(node);
 
@@ -102,7 +101,7 @@ module.exports = function(callback) {
     this.width = width;
 
     this._stage.setSize({
-      height: height - this._sketchpadHeight,
+      height: height,
       width: width
     });
 
@@ -303,6 +302,8 @@ module.exports = function(callback) {
 
       this._app.draw();
     }.bind(this));
+
+    this._group.on('dragmove', this.updateJax.bind(this));
   };
 
   QuadraticPipe.prototype.animate = function() {
@@ -327,6 +328,17 @@ module.exports = function(callback) {
 
       anim.play();
     }.bind(this));
+  };
+
+  QuadraticPipe.prototype.getAbsolutePosition = function() {
+    var controlPosition = this._controlAnchor.getAbsolutePosition();
+    var endPosition = this._endAnchor.getAbsolutePosition();
+    var startPosition = this._startAnchor.getAbsolutePosition();
+
+    return {
+      x: Math.min(controlPosition.x, endPosition.x, startPosition.x),
+      y: Math.max(controlPosition.y, endPosition.y, startPosition.y)
+    };
   };
 
   QuadraticPipe.prototype.getGroup = function() {
@@ -394,6 +406,11 @@ module.exports = function(callback) {
   };
 
   QuadraticPipe.prototype.updateJax = debounce(function() {
+    var position = this.getAbsolutePosition();
+
+    this._jax.style.left = position.x + 'px';
+    this._jax.style.top = position.y + 10 + 'px';
+
     var b = bezier2(this._controlPoint, this._startPoint, this._endPoint);
     
     Katex.render(
@@ -405,6 +422,8 @@ module.exports = function(callback) {
       this._jax
     );
   }, 100);
+
+
 
   QuadraticPipeAnimation = function(layer, controlPoint, startPoint, endPoint, destroy) {
     var xMax = Math.max(controlPoint.x, endPoint.x, startPoint.x);

@@ -9,9 +9,16 @@ html, body {
 }
 
 #sketchpad {
-	border-top: 1px solid #000;
-	height: 150px;
-	width: 100%;
+	bottom: 0;
+	left: 0;
+	position: absolute;
+	right: 0;
+	top: 0;
+	z-index: -1;
+}
+
+#sketchpad > .formula {
+	position: absolute;
 }
 
 #actions {
@@ -39,4 +46,10 @@ html, body {
 	line-height: 64px;
 	text-align: center;
 	width: inherit;
+}
+
+/* KATEX */
+
+.katex {
+	font-size: 14px !important;
 }
