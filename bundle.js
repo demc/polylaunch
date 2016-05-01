@@ -29506,11 +29506,12 @@ module.exports = function(callback) {
     this._stage.add(animLayer);
 
     function destroy() { 
-      anim.layer.clear();
+      animLayer.removeChildren();
+      animLayer.draw();
       this._freeAnimationLayers.push(animLayer);
     }
 
-    callback(animLayer, destroy);
+    callback(animLayer, destroy.bind(this));
   };
 
   var QuadraticPipe = function(app, layer, jax, x0, y0, x1, y1, x2, y2) {
@@ -29587,13 +29588,39 @@ module.exports = function(callback) {
       y: y0
     });
 
+    this._animButtonGroup = new Konva.Group();
+    this._animButtonGroup
+      .setX(xMax + 10)
+      .setY(yMin);
+
+    this._animButton = new Konva.Rect({
+      fill: 'green',
+      height: 24,
+      width: 24,
+      x: 0, 
+      y: 0
+    });
+
+    this._animTriangle = new Konva.Text({
+      fill: '#FFF',
+      fontSize: 18,
+      text: '\u25B6',
+      x: 4,
+      y: 5
+    });
+
+    this._animButtonGroup
+      .add(this._animButton)
+      .add(this._animTriangle);
+
     this._group = new Konva.Group({draggable: true});
 
     this._group.add(this._curve);
     this._group.add(this._boundingBox);
     this._group.add(this._controlAnchor);
     this._group.add(this._endAnchor);
-    this._group.add(this._startAnchor);  
+    this._group.add(this._startAnchor);
+    this._group.add(this._animButtonGroup);  
 
     this._boundingBox.on('mouseenter', function(event) {
       this._app.setCursor('move');        
@@ -29603,25 +29630,7 @@ module.exports = function(callback) {
       this._app.revertCursor();
     }.bind(this));
 
-    this._group.on('dblclick', function(event) {
-      this._group.hide();
-      this._app.draw();
-
-      var x = this._group.x();
-      var y = this._group.y();
-
-      this._app.requestAnimationLayer(function(layer, destroy) {
-        var anim = new QuadraticPipeAnimation(
-          layer,
-          {x: x + this._controlPoint.x, y: y + this._controlPoint.y},
-          {x: x + this._startPoint.x, y: y + this._startPoint.y},
-          {x: x + this._endPoint.x, y: y + this._endPoint.y},
-          2000
-        );
-
-        anim.play();
-      }.bind(this));
-    }.bind(this));
+    this._animButtonGroup.on('click', this.animate.bind(this));
 
     var pointMouseEnterHandler = function(event) {
       event.target.setStrokeWidth(2).setRadius(7);
@@ -29680,11 +29689,27 @@ module.exports = function(callback) {
   };
 
   QuadraticPipe.prototype.animate = function() {
-    
-  };
+    this._group.hide();
+    this._app.draw();
 
-  QuadraticPipe.prototype.unanimate = function() {
+    var x = this._group.x();
+    var y = this._group.y();
 
+    this._app.requestAnimationLayer(function(layer, destroy) {
+      var anim = new QuadraticPipeAnimation(
+        layer,
+        {x: x + this._controlPoint.x, y: y + this._controlPoint.y},
+        {x: x + this._startPoint.x, y: y + this._startPoint.y},
+        {x: x + this._endPoint.x, y: y + this._endPoint.y},
+        function() {
+          destroy();
+          this._group.show();
+          this._app.draw();
+        }.bind(this)
+      );
+
+      anim.play();
+    }.bind(this));
   };
 
   QuadraticPipe.prototype.getGroup = function() {
@@ -29737,6 +29762,10 @@ module.exports = function(callback) {
       .setWidth(width)
       .setX(xMin)
       .setY(yMin);
+
+    this._animButtonGroup
+      .setX(xMax + 10)
+      .setY(yMin);
   };
 
   QuadraticPipe.prototype.updateCurve = function() {
@@ -29760,9 +29789,14 @@ module.exports = function(callback) {
     );
   }, 100);
 
-  QuadraticPipeAnimation = function(layer, controlPoint, startPoint, endPoint, duration) {
+  QuadraticPipeAnimation = function(layer, controlPoint, startPoint, endPoint, destroy) {
+    var xMax = Math.max(controlPoint.x, endPoint.x, startPoint.x);
+    var xMin = Math.min(controlPoint.x, endPoint.x, startPoint.x);
+    var yMax = Math.max(controlPoint.y, endPoint.y, startPoint.y);
+    var yMin = Math.min(controlPoint.y, endPoint.y, startPoint.y);
+
     this._controlPoint = controlPoint;
-    this._duration = duration || 3000;
+    this._destroy = destroy;
     this._endPoint = endPoint;
     this._layer = layer;
     this._progress = 0;
@@ -29870,6 +29904,51 @@ module.exports = function(callback) {
       strokeWidth: 1,
     });
 
+    this._pausePlayButtonGroup = new Konva.Group({
+      x: xMax + 10,
+      y: yMin,
+    });
+
+    this._pausePlayButton = new Konva.Rect({
+      height: 24,
+      width: 24,
+    });
+
+    this._pausePlayButtonText = new Konva.Text({
+      fill: '#FFF',
+      fontSize: 18,
+      x: 5,
+      y: 4
+    });
+
+    this._pausePlayButtonGroup
+      .add(this._pausePlayButton)
+      .add(this._pausePlayButtonText);
+
+    this._backButtonGroup = new Konva.Group({
+      x: xMax + 10,
+      y: yMin + 28
+    });
+
+    this._backButton = new Konva.Rect({
+      fill: '#777',
+      height: 24,
+      width: 24
+    });
+
+    this._backButtonText = new Konva.Text({
+      fill: '#FFF',
+      fontSize: 18,
+      rotation: 180,
+      text: '\u27A5',
+      x: 20,
+      y: 21
+    });
+
+    this._backButtonGroup
+      .add(this._backButton)
+      .add(this._backButtonText);
+
     this._layer.add(this._lineA);
     this._layer.add(this._lineB);
     this._layer.add(this._curve);
@@ -29880,6 +29959,10 @@ module.exports = function(callback) {
     this._layer.add(this._animAnchorA);
     this._layer.add(this._animAnchorB);
     this._layer.add(this._animAnchorC);
+    this._layer.add(this._pausePlayButtonGroup);
+    this._layer.add(this._backButtonGroup);
+
+    this._backButtonGroup.on('click', this.destroy.bind(this));
 
     this._anim = new Konva.Animation(
       this._tick.bind(this),
@@ -29906,16 +29989,19 @@ module.exports = function(callback) {
     });
   };
 
-  QuadraticPipeAnimation.prototype.pause = function() {
-
+  QuadraticPipeAnimation.prototype.destroy = function() {
+    this._anim.stop();
+    this._destroy();
   };
 
   QuadraticPipeAnimation.prototype.play = function() {
+    this._pausePlayButton.setFill('red');
+    this._pausePlayButtonGroup.off('click');
+    this._pausePlayButtonGroup.on('click', this.stop.bind(this));
+    this._pausePlayButtonText.setText('\u23F8');
+
+    this._pausePlayButtonGroup.draw();
     this._anim.start();
-  };
-
-  QuadraticPipeAnimation.prototype.reset = function() {
-
   };
 
   QuadraticPipeAnimation.prototype.seek = function(position) {
@@ -29923,6 +30009,12 @@ module.exports = function(callback) {
   };
 
   QuadraticPipeAnimation.prototype.stop = function() {
+    this._pausePlayButton.setFill('green');
+    this._pausePlayButtonGroup.off('click');
+    this._pausePlayButtonGroup.on('click', this.play.bind(this));
+    this._pausePlayButtonText.setText('\u25B6');
+
+  this._pausePlayButtonGroup.draw();
     this._anim.stop();
   };
 
