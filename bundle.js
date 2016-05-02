@@ -29804,7 +29804,7 @@ module.exports = function(callback) {
       '\\text{for } t \\text{ 0 to 1}', 
       this._jax
     );
-  }, 100);
+  }, 10);
 
 
 
