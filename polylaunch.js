@@ -476,7 +476,8 @@ module.exports = function(callback) {
         ctx.quadraticCurveTo(controlPoint.x, controlPoint.y, endPoint.x, endPoint.y);
         ctx.strokeShape(this);
       },
-      stroke: '#222',
+      stroke: 'red',
+      strokeWidth: 3,
       startPoint: {x: startPoint.x, y: startPoint.y},
       controlPoint: {x: startPoint.x, y: startPoint.y},
       endPoint: {x: startPoint.x, y: startPoint.y}
@@ -507,26 +508,25 @@ module.exports = function(callback) {
     this._tweenBC = linearTween(controlPoint.x, controlPoint.y, endPoint.x, endPoint.y);
 
     this._animAnchorA = new Konva.Circle({
-      fill: '#222',
+      fill: 'green',
       radius: 3,
-      strokeWidth: 1,
+      strokeWidth: 0,
       x: startPoint.x,
       y: startPoint.y
     });
 
     this._animAnchorB = new Konva.Circle({
-      fill: '#222',
+      fill: 'green',
       radius: 3,
-      strokeWidth: 1,
+      strokeWidth: 0,
       x: controlPoint.x,
       y: controlPoint.y
     }); 
 
     this._animAnchorC = new Konva.Circle({
-      fill: '#ccc',
+      fill: 'red',
       radius: 5,
-      stroke: '#222',
-      strokeWidth: 1,
+      strokeWidth: 0,
       x: startPoint.x,
       y: startPoint.y
     });
@@ -536,7 +536,7 @@ module.exports = function(callback) {
         this._animPointA.x, this._animPointA.y,
         this._animPointB.x, this._animPointB.y
       ],
-      stroke: '#222',
+      stroke: 'green',
       strokeWidth: 1,
     });
 
@@ -588,13 +588,13 @@ module.exports = function(callback) {
     this._layer.add(this._lineA);
     this._layer.add(this._lineB);
     this._layer.add(this._curve);
-    this._layer.add(this._controlAnchor);
-    this._layer.add(this._endAnchor);
-    this._layer.add(this._startAnchor);
     this._layer.add(this._animLine);
     this._layer.add(this._animAnchorA);
     this._layer.add(this._animAnchorB);
     this._layer.add(this._animAnchorC);
+    this._layer.add(this._controlAnchor);
+    this._layer.add(this._endAnchor);
+    this._layer.add(this._startAnchor);
     this._layer.add(this._pausePlayButtonGroup);
     this._layer.add(this._backButtonGroup);
 
