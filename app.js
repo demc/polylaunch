@@ -5,9 +5,10 @@ var tooltip = require('tooltip');
 polylaunch(function(P) {
   fastclick(document.body);
 
-  var app = P.App(
+  var app = new P.App(
     'container',
     'sketchpad',
+    'tableview',
     window.innerWidth,
     window.innerHeight
   );

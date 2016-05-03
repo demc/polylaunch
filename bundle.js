@@ -6,9 +6,10 @@ var tooltip = require('tooltip');
 polylaunch(function(P) {
   fastclick(document.body);
 
-  var app = P.App(
+  var app = new P.App(
     'container',
     'sketchpad',
+    'tableview',
     window.innerWidth,
     window.innerHeight
   );
@@ -29387,19 +29388,19 @@ var Konva = require('konva');
 var debounce = require('debounce');
 var bezier2 = require('./bezier2');
 var linearTween = require('./linear-tween');
+var roundPrecision = require('round-precision');
+
+var recycleBin = document.createElement('div');
 
 module.exports = function(callback) {
 
   // Override pixelRatio
   Konva.pixelRatio = window.devicePixelRatio;
 
-  var App = function(containerId, sketchpadId, width, height) {
-    if (!(this instanceof App)) {
-      return new App(containerId, sketchpadId, width, height);
-    }
-
+  var App = function(containerId, sketchpadId, tableviewId, width, height) {
     this._containerId = containerId;
     this._sketchpadId = sketchpadId;
+    this._tableviewId = tableviewId;
 
     this.height = height;
     this.width = width;
@@ -29444,16 +29445,26 @@ module.exports = function(callback) {
 
   App.prototype.createPipeAt = function(x, y) {
     if (!this._pipeLayer.getIntersection({x: x, y: y})) {
-      var node = document.createElement('div');
-      node.className = 'formula';
+
+      var formulaNode = document.createElement('div');
+      formulaNode.className = 'formula';
 
       var sketchpad = document.getElementById(this._sketchpadId);
-      sketchpad.appendChild(node);
+      sketchpad.appendChild(formulaNode);
+
+      recycleBin.innerHTML = document.getElementById('table-tmpl').textContent;
+      var tableNode = recycleBin.children[0];
+      recycleBin.innerHTML = '';
+      tableNode.style.display = 'none';
+
+      var tableview = document.getElementById(this._tableviewId);
+      tableview.appendChild(tableNode);
 
       var pipe = new QuadraticPipe(
         this,
         this._pipeLayer,
-        node,
+        formulaNode,
+        tableNode,
         x,
         y,
         x + 50,
@@ -29513,10 +29524,11 @@ module.exports = function(callback) {
     callback(animLayer, destroy.bind(this));
   };
 
-  var QuadraticPipe = function(app, layer, jax, x0, y0, x1, y1, x2, y2) {
+  var QuadraticPipe = function(app, layer, formulaNode, tableNode, x0, y0, x1, y1, x2, y2) {
     this._app = app;
     this._layer = layer;
-    this._jax = jax;
+    this._formulaNode = formulaNode;
+    this._tableNode = tableNode;
 
     this._controlPoint = {x: x1, y: y1};
     this._endPoint = {x: x2, y: y2};
@@ -29587,8 +29599,7 @@ module.exports = function(callback) {
       y: y0
     });
 
-    this._animButtonGroup = new Konva.Group();
-    this._animButtonGroup
+    this._animButtonGroup = new Konva.Group()
       .setX(xMax + 10)
       .setY(yMin);
 
@@ -29611,6 +29622,7 @@ module.exports = function(callback) {
     this._animButtonGroup
       .add(this._animButton)
       .add(this._animTriangle);
+
 
     this._group = new Konva.Group({draggable: true});
 
@@ -29657,7 +29669,7 @@ module.exports = function(callback) {
       this.setControlPoint({x: x, y: y});
       this.updateBoundingBox();
       this.updateCurve();
-      this.updateJax();
+      this.updateformulaNode();
 
       this._app.draw();
     }.bind(this));
@@ -29669,7 +29681,7 @@ module.exports = function(callback) {
       this.setEndPoint({x: x, y: y});
       this.updateBoundingBox();
       this.updateCurve();
-      this.updateJax();
+      this.updateformulaNode();
 
       this._app.draw();
     }.bind(this));
@@ -29681,12 +29693,12 @@ module.exports = function(callback) {
       this.setStartPoint({x: x, y: y});
       this.updateBoundingBox();
       this.updateCurve();
-      this.updateJax();
+      this.updateformulaNode();
 
       this._app.draw();
     }.bind(this));
 
-    this._group.on('dragmove', this.updateJax.bind(this));
+    this._group.on('dragmove', this.updateformulaNode.bind(this));
   };
 
   QuadraticPipe.prototype.animate = function() {
@@ -29699,11 +29711,15 @@ module.exports = function(callback) {
     this._app.requestAnimationLayer(function(layer, destroy) {
       var anim = new QuadraticPipeAnimation(
         layer,
+        this._formulaNode,
+        this._tableNode,
         {x: x + this._controlPoint.x, y: y + this._controlPoint.y},
         {x: x + this._startPoint.x, y: y + this._startPoint.y},
         {x: x + this._endPoint.x, y: y + this._endPoint.y},
         function() {
           destroy();
+          this._tableNode.style.display = 'none';
+          this._formulaNode.style.display = 'block';
           this._group.show();
           this._app.draw();
         }.bind(this)
@@ -29788,11 +29804,11 @@ module.exports = function(callback) {
     });
   };
 
-  QuadraticPipe.prototype.updateJax = debounce(function() {
+  QuadraticPipe.prototype.updateformulaNode = debounce(function() {
     var position = this.getAbsolutePosition();
 
-    this._jax.style.left = position.x + 'px';
-    this._jax.style.top = position.y + 10 + 'px';
+    this._formulaNode.style.left = position.x + 'px';
+    this._formulaNode.style.top = position.y + 10 + 'px';
 
     var b = bezier2(this._controlPoint, this._startPoint, this._endPoint);
     
@@ -29802,13 +29818,19 @@ module.exports = function(callback) {
       b.y.toTex() +
       '\\end{cases}' +
       '\\text{for } t \\text{ 0 to 1}', 
-      this._jax
+      this._formulaNode
     );
   }, 10);
 
-
-
-  QuadraticPipeAnimation = function(layer, controlPoint, startPoint, endPoint, destroy) {
+  QuadraticPipeAnimation = function(
+    layer,
+    formulaNode,
+    tableNode,
+    controlPoint,
+    startPoint,
+    endPoint,
+    destroy
+  ) {
     var xMax = Math.max(controlPoint.x, endPoint.x, startPoint.x);
     var xMin = Math.min(controlPoint.x, endPoint.x, startPoint.x);
     var yMax = Math.max(controlPoint.y, endPoint.y, startPoint.y);
@@ -29817,9 +29839,17 @@ module.exports = function(callback) {
     this._controlPoint = controlPoint;
     this._destroy = destroy;
     this._endPoint = endPoint;
+    this._formulaNode = formulaNode;
+    this._i = 0;
     this._layer = layer;
+    this._mode = 'formula';
     this._progress = 0;
     this._startPoint = startPoint;
+    this._tableNode = tableNode;
+    this._tableBody = tableNode.querySelector('tbody');
+
+    tableNode.style.left = xMax + 44 + 'px';
+    tableNode.style.top = yMin + 'px';
 
     this._controlAnchor = new Konva.Circle({
       fill: 'pink',
@@ -29943,10 +29973,34 @@ module.exports = function(callback) {
     this._pausePlayButtonGroup
       .add(this._pausePlayButton)
       .add(this._pausePlayButtonText);
+    
+    this._modeButtonGroup = new Konva.Group()
+      .setX(xMax + 10)
+      .setY(yMin + 28);
+
+    this._modeButton = new Konva.Rect({
+      fill: 'blue',
+      height: 24,
+      width: 24,
+      x: 0, 
+      y: 0
+    });    
+
+    this._modeSymbol = new Konva.Text({
+      fill: '#FFF',
+      fontSize: 18,
+      text: '\u25a4',
+      x: 4,
+      y: 4
+    });
+
+    this._modeButtonGroup
+      .add(this._modeButton)
+      .add(this._modeSymbol);
 
     this._backButtonGroup = new Konva.Group({
       x: xMax + 10,
-      y: yMin + 28
+      y: yMin + 56
     });
 
     this._backButton = new Konva.Rect({
@@ -29979,9 +30033,17 @@ module.exports = function(callback) {
     this._layer.add(this._endAnchor);
     this._layer.add(this._startAnchor);
     this._layer.add(this._pausePlayButtonGroup);
+    this._layer.add(this._modeButtonGroup);
     this._layer.add(this._backButtonGroup);
 
     this._backButtonGroup.on('click', this.destroy.bind(this));
+    this._modeButtonGroup.on('click', function() {
+      if (this._mode === 'formula') {
+        this.tableMode();
+      } else {
+        this.formulaMode();
+      }
+    }.bind(this));
 
     this._anim = new Konva.Animation(
       this._tick.bind(this),
@@ -29990,7 +30052,8 @@ module.exports = function(callback) {
   };
 
   QuadraticPipeAnimation.prototype._tick = function(frame) {
-    var progress = this._progress = (this._progress + 0.005) % 1;
+    var rate = this._mode === 'table' ? 0.002 : 0.005;
+    var progress = this._progress = (this._progress + rate) % 1;
 
     var ab = this._tweenAB(progress);
     var bc = this._tweenBC(progress);
@@ -30006,11 +30069,63 @@ module.exports = function(callback) {
       endPoint: {x: pen.x, y: pen.y},
       controlPoint: {x: ab.x, y: ab.y}
     });
+
+    if (this._mode === 'table') {
+      this._i = roundPrecision(progress / 0.05, 0);
+      var curr = this._i;
+      var prev = curr - 1;
+      if (prev < 0) {
+        prev = this._tableRows.length - 1;
+      }
+
+      this._tableRows[curr].style.color = 'red';
+      this._tableRows[prev].style.color = '';
+    }
   };
 
   QuadraticPipeAnimation.prototype.destroy = function() {
     this._anim.stop();
     this._destroy();
+  };
+
+  QuadraticPipeAnimation.prototype.formulaMode = function() {
+    this._mode = 'formula';
+    this._formulaNode.style.display = 'block';
+    this._tableNode.style.display = 'none';
+  };
+
+  QuadraticPipeAnimation.prototype.tableMode = function() {
+    this._mode = 'table';
+    this._formulaNode.style.display = 'none';
+    this._tableNode.style.display = 'block';
+
+    var fragment = document.createDocumentFragment();
+    for (var i = 0.0; i < 1.05; i += 0.05) {
+      var ab = this._tweenAB(i);
+      var bc = this._tweenBC(i);
+      
+      var penTween = linearTween(ab.x, ab.y, bc.x, bc.y);
+      var pen = penTween(i);
+
+      var row = document.createElement('tr');
+      var t = document.createElement('td');
+      var x = document.createElement('td');
+      var y = document.createElement('td');
+
+      t.textContent = roundPrecision(i, 2);
+      x.textContent = roundPrecision(pen.x, 0);
+      y.textContent = roundPrecision(pen.y, 0);
+
+      row.appendChild(t);
+      row.appendChild(x);
+      row.appendChild(y);
+
+      fragment.appendChild(row);
+    }
+
+    this._tableBody.innerHTML = '';
+    this._tableBody.appendChild(fragment);
+    this._tableRows = this._tableBody.querySelectorAll('tr');
   };
 
   QuadraticPipeAnimation.prototype.play = function() {
@@ -30042,7 +30157,7 @@ module.exports = function(callback) {
   });
 };
 
-},{"./bezier2":2,"./linear-tween":3,"debounce":4,"katex":7,"konva":30}],97:[function(require,module,exports){
+},{"./bezier2":2,"./linear-tween":3,"debounce":4,"katex":7,"konva":30,"round-precision":31}],97:[function(require,module,exports){
 
 },{}],98:[function(require,module,exports){
 (function (global){

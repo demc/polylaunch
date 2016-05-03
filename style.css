@@ -21,6 +21,28 @@ html, body {
 	position: absolute;
 }
 
+#tableview {
+	bottom: 0;
+	font-size: 18px;
+	left: 0;
+	position: absolute;
+	right: 0;
+	top: 0;
+	z-index: -1;
+}
+
+#tableview > table {
+	position: absolute;
+}
+
+#tableview th {
+	border-bottom: 1px solid #000;
+}
+
+#tableview td {
+	padding: 0 10px;
+}
+
 #actions {
 	bottom: 12px;
 	line-height: 42px;
@@ -50,6 +72,6 @@ html, body {
 
 /* KATEX */
 
-.katex {
+#sketchpad .katex {
 	font-size: 14px !important;
 }

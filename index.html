@@ -7,15 +7,27 @@
 		<link rel="stylesheet" type="text/css" href="style.css" />
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.5.1/katex.min.css">
 	<body>
-
 		<div id="container"></div>
 		<div id="sketchpad"></div>
+		<div id="tableview" class="katex"></div>
 
 		<div id="actions">
 			<a id="actionButton">
 				<i>&#43;</i>
 			</a>
 		</div>
+
+		<script id="table-tmpl" type="text/template">
+			<table>
+				<thead>
+					<th>t</th>
+					<th>x</th>
+					<th>y</th>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+		</script>
 
 		<script src="bundle.js"></script>
 	</body>
