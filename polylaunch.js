@@ -422,11 +422,17 @@ module.exports = function(callback) {
 
   QuadraticPipe.prototype.updateformulaNode = debounce(function() {
     var position = this.getAbsolutePosition();
+    var x = this._group.x();
+    var y = this._group.y();    
 
     this._formulaNode.style.left = position.x + 'px';
     this._formulaNode.style.top = position.y + 10 + 'px';
 
-    var b = bezier2(this._controlPoint, this._startPoint, this._endPoint);
+    var b = bezier2(
+      {x: x + this._controlPoint.x, y: y + this._controlPoint.y},
+      {x: x + this._startPoint.x, y: y + this._startPoint.y},
+      {x: x + this._endPoint.x, y: y + this._endPoint.y}
+    );
     
     Katex.render(
       '\\begin{cases}' +
@@ -493,7 +499,28 @@ module.exports = function(callback) {
       x: startPoint.x,
       y: startPoint.y
     });
-    
+
+    this._controlPointText = new Konva.Text({
+      fill: '#222',
+      text: '(' + controlPoint.x + ', ' + controlPoint.y + ')',
+      x: controlPoint.x,
+      y: controlPoint.y
+    });
+
+    this._endPointText = new Konva.Text({
+      fill: '#222',
+      text: '(' + endPoint.x + ', ' + endPoint.y + ')',
+      x: endPoint.x,
+      y: endPoint.y
+    });
+
+    this._startPointText = new Konva.Text({
+      fill: '#222',
+      text: '(' + startPoint.x + ', ' + startPoint.y + ')',
+      x: startPoint.x,
+      y: startPoint.y
+    });
+
     this._curve = new Konva.Shape({
       sceneFunc: function(ctx) {
         var controlPoint = this.attrs.controlPoint;
@@ -651,6 +678,9 @@ module.exports = function(callback) {
     this._layer.add(this._pausePlayButtonGroup);
     this._layer.add(this._modeButtonGroup);
     this._layer.add(this._backButtonGroup);
+    this._layer.add(this._controlPointText);
+    this._layer.add(this._endPointText);
+    this._layer.add(this._startPointText);
 
     this._backButtonGroup.on('click', this.destroy.bind(this));
     this._modeButtonGroup.on('click', function() {
