@@ -470,7 +470,7 @@ module.exports = function(callback) {
     this._tableNode = tableNode;
     this._tableBody = tableNode.querySelector('tbody');
 
-    tableNode.style.left = xMax + 44 + 'px';
+    tableNode.style.left = xMax + 60 + 'px';
     tableNode.style.top = yMin + 'px';
 
     this._controlAnchor = new Konva.Circle({
@@ -501,24 +501,24 @@ module.exports = function(callback) {
     });
 
     this._controlPointText = new Konva.Text({
-      fill: '#222',
+      fill: 'red',
       text: '(' + controlPoint.x + ', ' + controlPoint.y + ')',
-      x: controlPoint.x,
-      y: controlPoint.y
+      x: controlPoint.x + 10,
+      y: controlPoint.y - 5
     });
 
     this._endPointText = new Konva.Text({
-      fill: '#222',
+      fill: 'blue',
       text: '(' + endPoint.x + ', ' + endPoint.y + ')',
-      x: endPoint.x,
-      y: endPoint.y
+      x: endPoint.x + 10,
+      y: endPoint.y - 5
     });
 
     this._startPointText = new Konva.Text({
-      fill: '#222',
+      fill: 'green',
       text: '(' + startPoint.x + ', ' + startPoint.y + ')',
-      x: startPoint.x,
-      y: startPoint.y
+      x: startPoint.x + 10,
+      y: startPoint.y - 5
     });
 
     this._curve = new Konva.Shape({
