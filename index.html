@@ -8,14 +8,24 @@
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.5.1/katex.min.css">
 	<body>
 		<div id="container"></div>
-		<div id="sketchpad"></div>
-		<div id="tableview" class="katex"></div>
+		<div id="sketchpad" class="abs-layer"></div>
+		<div id="tableview" class="abs-layer katex"></div>
+		<div id="sliderview" class="abs-layer"></div>
 
 		<div id="actions">
 			<a id="actionButton">
 				<i>&#43;</i>
 			</a>
 		</div>
+
+		<script id="slider-tmpl" type="text/template">
+			<div class="slider">
+				<label class="katex">
+					<span class="t-value"></span>
+					<input type="range" min="0.0" max="1.0" step=".01" />
+				</label>
+			</div>
+		</script>
 
 		<script id="table-tmpl" type="text/template">
 			<table>

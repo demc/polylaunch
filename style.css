@@ -8,7 +8,7 @@ html, body {
 	-webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 
-#sketchpad {
+.abs-layer {
 	bottom: 0;
 	left: 0;
 	position: absolute;
@@ -21,14 +21,28 @@ html, body {
 	position: absolute;
 }
 
-#tableview {
-	bottom: 0;
-	font-size: 18px;
-	left: 0;
+#sliderview {
+	pointer-events: none;
+	z-index: 1;
+}
+
+#sliderview > .slider {
+	pointer-events: all;
 	position: absolute;
-	right: 0;
-	top: 0;
-	z-index: -1;
+	width: 350px;
+}
+
+.slider .t-value {
+	display: inline-block;
+	width: 60px;
+}
+
+.slider input[type="range"] {
+	width: 350px;
+} 
+
+#tableview {
+	font-size: 18px;
 }
 
 #tableview > table {
@@ -74,4 +88,8 @@ html, body {
 
 #sketchpad .katex {
 	font-size: 14px !important;
+}
+
+#sliderview .katex {
+	font-size: 18px !important;	
 }

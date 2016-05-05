@@ -1,6 +1,5 @@
 var fastclick = require('fastclick');
 var polylaunch = require('./polylaunch');
-var tooltip = require('tooltip');
 
 polylaunch(function(P) {
   fastclick(document.body);
@@ -9,6 +8,7 @@ polylaunch(function(P) {
     'container',
     'sketchpad',
     'tableview',
+    'sliderview',
     window.innerWidth,
     window.innerHeight
   );

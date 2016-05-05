@@ -8,13 +8,23 @@ var roundPrecision = require('round-precision');
 
 var recycleBin = document.createElement('div');
 
+function createHiddenElement(templateId) {
+  recycleBin.innerHTML = document.getElementById(templateId).textContent;
+  var tableNode = recycleBin.children[0];
+  recycleBin.innerHTML = '';
+  tableNode.style.display = 'none';
+
+  return tableNode;
+}
+
 module.exports = function(callback) {
 
   // Override pixelRatio
   Konva.pixelRatio = window.devicePixelRatio;
 
-  var App = function(containerId, sketchpadId, tableviewId, width, height) {
+  var App = function(containerId, sketchpadId, tableviewId, sliderviewId, width, height) {
     this._containerId = containerId;
+    this._sliderviewId = sliderviewId;
     this._sketchpadId = sketchpadId;
     this._tableviewId = tableviewId;
 
@@ -68,11 +78,11 @@ module.exports = function(callback) {
       var sketchpad = document.getElementById(this._sketchpadId);
       sketchpad.appendChild(formulaNode);
 
-      recycleBin.innerHTML = document.getElementById('table-tmpl').textContent;
-      var tableNode = recycleBin.children[0];
-      recycleBin.innerHTML = '';
-      tableNode.style.display = 'none';
+      var sliderNode = createHiddenElement('slider-tmpl');
+      var sliderview = document.getElementById('sliderview');
+      sliderview.appendChild(sliderNode);
 
+      var tableNode = createHiddenElement('table-tmpl');
       var tableview = document.getElementById(this._tableviewId);
       tableview.appendChild(tableNode);
 
@@ -80,6 +90,7 @@ module.exports = function(callback) {
         this,
         this._pipeLayer,
         formulaNode,
+        sliderNode,
         tableNode,
         x,
         y,
@@ -140,10 +151,11 @@ module.exports = function(callback) {
     callback(animLayer, destroy.bind(this));
   };
 
-  var QuadraticPipe = function(app, layer, formulaNode, tableNode, x0, y0, x1, y1, x2, y2) {
+  var QuadraticPipe = function(app, layer, formulaNode, sliderNode, tableNode, x0, y0, x1, y1, x2, y2) {
     this._app = app;
-    this._layer = layer;
     this._formulaNode = formulaNode;
+    this._layer = layer;
+    this._sliderNode = sliderNode;
     this._tableNode = tableNode;
 
     this._controlPoint = {x: x1, y: y1};
@@ -239,7 +251,6 @@ module.exports = function(callback) {
       .add(this._animButton)
       .add(this._animTriangle);
 
-
     this._group = new Konva.Group({draggable: true});
 
     this._group.add(this._curve);
@@ -285,7 +296,8 @@ module.exports = function(callback) {
       this.setControlPoint({x: x, y: y});
       this.updateBoundingBox();
       this.updateCurve();
-      this.updateformulaNode();
+      this.updateFormulaNode();
+      this.updateSliderNode();
 
       this._app.draw();
     }.bind(this));
@@ -297,7 +309,8 @@ module.exports = function(callback) {
       this.setEndPoint({x: x, y: y});
       this.updateBoundingBox();
       this.updateCurve();
-      this.updateformulaNode();
+      this.updateFormulaNode();
+      this.updateSliderNode();
 
       this._app.draw();
     }.bind(this));
@@ -309,12 +322,14 @@ module.exports = function(callback) {
       this.setStartPoint({x: x, y: y});
       this.updateBoundingBox();
       this.updateCurve();
-      this.updateformulaNode();
+      this.updateFormulaNode();
+      this.updateSliderNode();
 
       this._app.draw();
     }.bind(this));
 
-    this._group.on('dragmove', this.updateformulaNode.bind(this));
+    this._group.on('dragmove', this.updateFormulaNode.bind(this));
+    this._group.on('dragmove', this.updateSliderNode.bind(this));
   };
 
   QuadraticPipe.prototype.animate = function() {
@@ -328,14 +343,17 @@ module.exports = function(callback) {
       var anim = new QuadraticPipeAnimation(
         layer,
         this._formulaNode,
+        this._sliderNode,
         this._tableNode,
         {x: x + this._controlPoint.x, y: y + this._controlPoint.y},
         {x: x + this._startPoint.x, y: y + this._startPoint.y},
         {x: x + this._endPoint.x, y: y + this._endPoint.y},
         function() {
           destroy();
-          this._tableNode.style.display = 'none';
           this._formulaNode.style.display = 'block';
+          this._sliderNode.style.display = 'none';
+          this._tableNode.style.display = 'none';
+          this.updateFormulaNode();
           this._group.show();
           this._app.draw();
         }.bind(this)
@@ -420,13 +438,13 @@ module.exports = function(callback) {
     });
   };
 
-  QuadraticPipe.prototype.updateformulaNode = debounce(function() {
+  QuadraticPipe.prototype.updateFormulaNode = debounce(function() {
     var position = this.getAbsolutePosition();
     var x = this._group.x();
     var y = this._group.y();    
 
     this._formulaNode.style.left = position.x + 'px';
-    this._formulaNode.style.top = position.y + 10 + 'px';
+    this._formulaNode.style.top = position.y + 40 + 'px';
 
     var b = bezier2(
       {x: x + this._controlPoint.x, y: y + this._controlPoint.y},
@@ -438,15 +456,22 @@ module.exports = function(callback) {
       '\\begin{cases}' +
       b.x.toTex() + '\\\\' +
       b.y.toTex() +
-      '\\end{cases}' +
-      '\\text{for } t \\text{ 0 to 1}', 
+      '\\end{cases}',
       this._formulaNode
     );
+  }, 10);
+
+  QuadraticPipe.prototype.updateSliderNode = debounce(function() {
+    var position = this.getAbsolutePosition();
+
+    this._sliderNode.style.left = position.x + 'px';
+    this._sliderNode.style.top = position.y + 10 + 'px';
   }, 10);
 
   QuadraticPipeAnimation = function(
     layer,
     formulaNode,
+    sliderNode,
     tableNode,
     controlPoint,
     startPoint,
@@ -458,6 +483,7 @@ module.exports = function(callback) {
     var yMax = Math.max(controlPoint.y, endPoint.y, startPoint.y);
     var yMin = Math.min(controlPoint.y, endPoint.y, startPoint.y);
 
+    this._bezier = bezier2(controlPoint, startPoint, endPoint);
     this._controlPoint = controlPoint;
     this._destroy = destroy;
     this._endPoint = endPoint;
@@ -467,8 +493,15 @@ module.exports = function(callback) {
     this._mode = 'formula';
     this._progress = 0;
     this._startPoint = startPoint;
+    this._slider = sliderNode.querySelector('input');
+    this._sliderNode = sliderNode;
+    this._sliderTValueNode = sliderNode.querySelector('.t-value');
+    this._state = 'play';
     this._tableNode = tableNode;
     this._tableBody = tableNode.querySelector('tbody');
+
+    sliderNode.style.display = '';
+    this._sliderTValueNode.textContent = 't = 0.0';
 
     tableNode.style.left = xMax + 60 + 'px';
     tableNode.style.top = yMin + 'px';
@@ -691,6 +724,10 @@ module.exports = function(callback) {
       }
     }.bind(this));
 
+    this._slider.addEventListener('click', this.handleSliderClick.bind(this));
+    this._slider.addEventListener('mousedown', this.handleSliderMouseDown.bind(this));
+    this._slider.addEventListener('mouseup', this.handleSliderMouseUp.bind(this));
+
     this._anim = new Konva.Animation(
       this._tick.bind(this),
       layer
@@ -700,6 +737,19 @@ module.exports = function(callback) {
   QuadraticPipeAnimation.prototype._tick = function(frame) {
     var rate = this._mode === 'table' ? 0.002 : 0.005;
     var progress = this._progress = (this._progress + rate) % 1;
+
+    this.draw(progress);
+  };
+
+  QuadraticPipeAnimation.prototype.destroy = function() {
+    this._anim.stop();
+    this._destroy();
+  };
+
+  QuadraticPipeAnimation.prototype.draw = function(progress) {
+    var roundProgress = roundPrecision(progress, 2);
+    this._slider.value = roundProgress;
+    this._sliderTValueNode.textContent = 't = ' + roundProgress;
 
     var ab = this._tweenAB(progress);
     var bc = this._tweenBC(progress);
@@ -727,17 +777,49 @@ module.exports = function(callback) {
       this._tableRows[curr].style.color = 'red';
       this._tableRows[prev].style.color = '';
     }
-  };
 
-  QuadraticPipeAnimation.prototype.destroy = function() {
-    this._anim.stop();
-    this._destroy();
+    Katex.render(
+      '\\begin{cases}' +
+      this._bezier.x.toTex(progress) + '\\\\' +
+      this._bezier.y.toTex(progress) +
+      '\\end{cases}',
+      this._formulaNode
+    );
   };
 
   QuadraticPipeAnimation.prototype.formulaMode = function() {
     this._mode = 'formula';
     this._formulaNode.style.display = 'block';
     this._tableNode.style.display = 'none';
+  };
+
+  QuadraticPipeAnimation.prototype.handleSliderChange = function(event) {
+    if (this._state === 'play') {
+      this.stop();
+    }
+
+    var progress = parseFloat(event.target.value);
+    this._progress = progress;
+    this._sliderTValueNode.textContent = 't = ' + roundPrecision(progress, 2);
+
+    this.draw(progress);
+    this._layer.draw();
+  };
+
+  QuadraticPipeAnimation.prototype.handleSliderClick = function(event) {
+    if (this._state === 'play') {
+      this.stop();
+    }
+  };
+
+  QuadraticPipeAnimation.prototype.handleSliderMouseDown = function(event) {
+    this._mouseMoveHandler = this.handleSliderChange.bind(this);
+    this._slider.addEventListener('mousemove', this._mouseMoveHandler);
+  };
+
+  QuadraticPipeAnimation.prototype.handleSliderMouseUp = function(event) {
+    this._mouseMoveHandler(event);
+    this._slider.removeEventListener('mousemove', this._mouseMoveHandler);
   };
 
   QuadraticPipeAnimation.prototype.tableMode = function() {
@@ -775,6 +857,7 @@ module.exports = function(callback) {
   };
 
   QuadraticPipeAnimation.prototype.play = function() {
+    this._state = 'play';
     this._pausePlayButton.setFill('red');
     this._pausePlayButtonGroup.off('click');
     this._pausePlayButtonGroup.on('click', this.stop.bind(this));
@@ -784,11 +867,8 @@ module.exports = function(callback) {
     this._anim.start();
   };
 
-  QuadraticPipeAnimation.prototype.seek = function(position) {
-
-  };
-
   QuadraticPipeAnimation.prototype.stop = function() {
+    this._state = 'stop';
     this._pausePlayButton.setFill('green');
     this._pausePlayButtonGroup.off('click');
     this._pausePlayButtonGroup.on('click', this.play.bind(this));
